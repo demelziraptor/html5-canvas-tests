@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Test Page</title>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      canvas {
+        border: 1px solid #9C9898;
+      }
+    </style>
+    <script src="kinetic-v3.9.7.min.js"></script>
+    <script src="canvas2image.js"></script>
+    <script src="base64.js"></script>
+    
+    <script>
+      function update(group, activeAnchor) {
+        var topLeft = group.get(".topLeft")[0];
+        var topRight = group.get(".topRight")[0];
+        var bottomRight = group.get(".bottomRight")[0];
+        var bottomLeft = group.get(".bottomLeft")[0];
+        var spin = group.get(".spin")[0];
+        var ghost = group.get(".ghost")[0];
+        var image = group.get(".image")[0];
+
+        // update anchor positions
+        switch (activeAnchor.getName()) {
+          var diff = 
+          case "topLeft":
+            topRight.attrs.y = activeAnchor.attrs.y;
+            bottomLeft.attrs.x = activeAnchor.attrs.x;
+            spin.attrs.y = activeAnchor.attrs.y - 20;
+            spin.attrs.x = activeAnchor.attrs.x + (image.attrs.width / 2);
+            ghost.attrs.x = spin.attrs.x;
+            ghost.attrs.y = spin.attrs.y;
+            break;
+          case "topRight":
+            topLeft.attrs.y = activeAnchor.attrs.y;
+            bottomRight.attrs.x = activeAnchor.attrs.x;
+            spin.attrs.y = activeAnchor.attrs.y - 20;
+            spin.attrs.x = activeAnchor.attrs.x - (image.attrs.width / 2);
+            ghost.attrs.x = spin.attrs.x;
+            ghost.attrs.y = spin.attrs.y;
+            break;
+          case "bottomRight":
+            bottomLeft.attrs.y = activeAnchor.attrs.y;
+            topRight.attrs.x = activeAnchor.attrs.x;
+            spin.attrs.y = activeAnchor.attrs.y - image.attrs.height - 20;
+            spin.attrs.x = activeAnchor.attrs.x - (image.attrs.width / 2);
+            ghost.attrs.x = spin.attrs.x;
+            ghost.attrs.y = spin.attrs.y;
+            break;
+          case "bottomLeft":
+            bottomRight.attrs.y = activeAnchor.attrs.y;
+            topLeft.attrs.x = activeAnchor.attrs.x;
+            spin.attrs.y = activeAnchor.attrs.y - image.attrs.height -  20;
+            spin.attrs.x = activeAnchor.attrs.x + (image.attrs.width / 2);
+            ghost.attrs.x = spin.attrs.x;
+            ghost.attrs.y = spin.attrs.y;
+            break;
+          case "ghost":
+            var c = image.getAbsolutePosition();
+            var p0 = {x: c.x, y: c.y - 50};
+            var p1 = stage.getUserPosition();
+            
+            var p0c = Math.sqrt(Math.pow(c.x-p0.x,2) + Math.pow(c.y-p0.y,2)); // p0->c (b)   
+            var p1c = Math.sqrt(Math.pow(c.x-p1.x,2) + Math.pow(c.y-p1.y,2)); // p1->c (a)
+            var p0p1 = Math.sqrt(Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2)); // p0->p1 (c)
+            
+            var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
+
+            image.setRotation(deg);
+            
+            var handles = new Array(topLeft, topRight, bottomLeft, bottomRight, spin);
+            for (var i=0; i < handles.length; i++) {
+            
+              switch (handles[i].getName()) {
+                case "topLeft":
+                  var tmpx = image.getAbsolutePosition().x - (image.attrs.width / 2);
+                  var tmpy = image.getAbsolutePosition().y - (image.attrs.height / 2);
+                  var orig = {x: tmpx, y: tmpy};
+                  break;
+                case "topRight":
+                  var tmpx = image.getAbsolutePosition().x + (image.attrs.width / 2);
+                  var tmpy = image.getAbsolutePosition().y - (image.attrs.height / 2);
+                  var orig = {x: tmpx, y: tmpy};
+                  break;
+                case "bottomLeft":
+                  var tmpx = image.getAbsolutePosition().x - (image.attrs.width / 2);
+                  var tmpy = image.getAbsolutePosition().y + (image.attrs.height / 2);
+                  var orig = {x: tmpx, y: tmpy};
+                  break;
+                case "bottomRight":
+                  var tmpx = image.getAbsolutePosition().x + (image.attrs.width / 2);
+                  var tmpy = image.getAbsolutePosition().y + (image.attrs.height / 2);
+                  var orig = {x: tmpx, y: tmpy};
+                  break;
+                case "spin":
+                  var tmpx = image.getAbsolutePosition().x;
+                  var tmpy = image.getAbsolutePosition().y - (image.attrs.height / 2) - 20;
+                  var orig = {x: tmpx, y: tmpy};
+                  break;
+              }
+              //var orig = handles[i].getAbsolutePosition();
+              
+              var dx = orig.x - c.x;
+              var dy = orig.y - c.y;
+              
+              var dx1 = (dx * Math.cos(deg)) - (dy * Math.sin(deg));
+              var dy1 = (dx * Math.sin(deg)) + (dy * Math.cos(deg));
+              
+              var x = dx1 + c.x;
+              var y = dy1 + c.y;
+              
+              handles[i].setAbsolutePosition(x, y);
+            }
+            break;
+        }
+
+        if (activeAnchor.getName() != "ghost") {
+          image.setPosition(topLeft.attrs.x + image.attrs.centerOffset.x, topLeft.attrs.y + image.attrs.centerOffset.y);
+          image.setSize(topRight.attrs.x - topLeft.attrs.x, bottomLeft.attrs.y - topLeft.attrs.y);
+        }
+      }
+      function scaleImage(topLeft, topRight, BottomLeft, image) {
+        image.setPosition(topLeft.attrs.x + image.attrs.centerOffset.x, topLeft.attrs.y + image.attrs.centerOffset.y);
+        image.setSize(topRight.attrs.x - topLeft.attrs.x, bottomLeft.attrs.y - topLeft.attrs.y);
+      }
+      function addAnchor(group, x, y, name, type) {
+        var stage = group.getStage();
+        var layer = group.getLayer();
+
+        // ghost on top of the rotate handle
+        if(type == 'rotateghost'){
+          var ghost = new Kinetic.Circle({
+            x: x,
+            y: y,
+            stroke: "#993333",
+            fill: "",
+            strokeWidth: 2,
+            radius: 4,
+            name: name,
+            draggable: true
+          });
+
+          ghost.on("dragmove", function() {
+            update(group, this);
+            layer.draw();
+          });
+          ghost.on("mousedown touchstart", function() {
+            group.draggable(false);
+            this.moveToTop();
+          });
+          ghost.on("dragend", function() {
+            group.draggable(true);
+            var spin = group.get(".spin")[0];
+            this.attrs.x = spin.attrs.x;
+            this.attrs.y = spin.attrs.y;
+            layer.draw();
+          });
+          // add hover styling
+          ghost.on("mouseover", function() {
+            var layer = this.getLayer();
+            document.body.style.cursor = "pointer";
+            this.setStrokeWidth(3);
+            layer.draw();
+          });
+          ghost.on("mouseout", function() {
+            var layer = this.getLayer();
+            document.body.style.cursor = "default";
+            this.setStrokeWidth(2);
+            layer.draw();
+          });
+
+          group.add(ghost);
+          
+        } else {
+          // rotate handles
+          if(type == 'rotate'){
+            var anchor = new Kinetic.Circle({
+              x: x,
+              y: y,
+              stroke: "#666",
+              fill: "#ddd",
+              strokeWidth: 2,
+              radius: 4,
+              name: name,
+              draggable: false
+            });
+            
+          // resize handles
+          } else {
+            var anchor = new Kinetic.Circle({
+              x: x,
+              y: y,
+              stroke: "#666",
+              fill: "#ddd",
+              strokeWidth: 2,
+              radius: 4,
+              name: name,
+              draggable: true
+            });
+          }
+
+          anchor.on("dragmove", function() {
+            update(group, this);
+            layer.draw();
+          });
+          anchor.on("mousedown touchstart", function() {
+            group.draggable(false);
+            this.moveToTop();
+          });
+          anchor.on("dragend", function() {
+            group.draggable(true);
+            layer.draw();
+          });
+          // add hover styling
+          anchor.on("mouseover", function() {
+            var layer = this.getLayer();
+            document.body.style.cursor = "pointer";
+            this.setStrokeWidth(3);
+            layer.draw();
+          });
+          anchor.on("mouseout", function() {
+            var layer = this.getLayer();
+            document.body.style.cursor = "default";
+            this.setStrokeWidth(2);
+            layer.draw();
+          });
+
+          group.add(anchor);
+        }
+      }
+
+
+      window.onload = function() {
+
+        stage = new Kinetic.Stage({
+          container: "container",
+          width: 800,
+          height: 600
+        });
+        
+        customlayer = new Kinetic.Layer();
+        stage.draw();
+        stagecontainer = document.getElementsByClassName('kineticjs-content')[0];
+        setupDragAndDrop();
+      };
+      
+      function addGabby() {
+        var img = document.getElementById('gabby');
+        var height = img.clientHeight;
+        var width = img.clientWidth;
+        addToCanvas(img, width, height); 
+      }
+      
+      function addToCanvas(img, width, height) {
+        var imgy = img;
+        var width = width;
+        var height = height;
+      
+        var gabbyGroup = new Kinetic.Group({
+          x: 300,
+          y: 300,
+          draggable: true
+        });
+
+        customlayer.add(gabbyGroup);
+        stage.add(customlayer);
+
+        var gabbyImg = new Kinetic.Image({
+          x: 0,
+          y: 0,
+          image: imgy,
+          width: width,
+          height: height,
+          name: "image",
+          centerOffset: [width/2, height/2]
+        });
+        
+        gabbyGroup.on("dblclick dbltap", function() {
+          customlayer.remove(gabbyGroup);
+          //gabbyGroup.setScale(-1,0);
+          customlayer.draw();
+        });
+
+        gabbyGroup.add(gabbyImg);
+        addAnchor(gabbyGroup, width / -2, height / -2, "topLeft", 0);
+        addAnchor(gabbyGroup, width / 2, height / -2, "topRight", 0);
+        addAnchor(gabbyGroup, width / 2, height / 2, "bottomRight", 0);
+        addAnchor(gabbyGroup, width / -2, height / 2, "bottomLeft", 0);
+        addAnchor(gabbyGroup, 0, (height / -2) - 20, "spin", 'rotate');
+        addAnchor(gabbyGroup, 0, (height / -2) - 20, "ghost", 'rotateghost');
+
+        gabbyGroup.on("dragstart", function() {
+          this.moveToTop();
+        });
+        
+        customlayer.draw();
+        awesomecanvas = document.getElementsByTagName('canvas')[2];
+      }
+      
+      function downloadCanvas() {
+      //Canvas2Image.saveAsJPEG(awesomecanvas);
+      var oImgPNG = Canvas2Image.saveAsPNG(awesomecanvas, true);
+        document.body.appendChild(oImgPNG);
+      }
+      
+      function clearCanvas() {
+        stage.reset();
+        customlayer = new Kinetic.Layer();
+      }
+	  
+      function setupDragAndDrop() {
+        var dragimg = new Image();
+        // To enable drag and drop
+        stagecontainer.addEventListener("dragover", function (evt) {
+          evt.preventDefault();
+        }, false);
+
+        // Handle dropped image file - only Firefox and Google Chrome
+        stagecontainer.addEventListener("drop", function (evt) {
+          var files = evt.dataTransfer.files;
+          if (files.length > 0) {
+            var file = files[0];
+            if (typeof FileReader !== "undefined" && file.type.indexOf("image") != -1) {
+              var reader = new FileReader();
+              reader.onload = function (evt) {
+                dragimg.src = evt.target.result;
+              };
+              reader.readAsDataURL(file);
+              dragimg.onload = function(){
+                addToCanvas(this, this.width, this.height);
+              }
+            }
+          }
+          evt.preventDefault();
+        }, false);
+       }
+      
+
+    </script>
+  </head>
+  <body onmousedown="return false;">
+    <div style="float: right;">
+      <img src="image.jpg" name="gabby" id="gabby" onClick="addGabby()" /><br /><br />
+      <a href="#" name="downloadcanvas" id="downloadcanvas" onClick="downloadCanvas()">download</a><br /><br />
+      <a href="#" name="clearcanvas" id="clearcanvas" onClick="clearCanvas()">clear</a>
+    </div>
+    <div id="container"></div>
+	<div id="newimg2"></div>
+  </body>
+</html>
