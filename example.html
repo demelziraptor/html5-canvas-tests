@@ -1,0 +1,245 @@
+<!-- http://jsbin.com/abejab/3/edit#source -->
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Test Page</title>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      canvas {
+        border: 1px solid #9C9898;
+      }
+    </style>
+    <!--<script src="kinetic-v3.9.7.min.js"></script>-->
+    <script src="http://www.kineticjs.com/download/kinetic-v3.8.0.min.js"></script>
+    <script src="canvas2image.js"></script>
+    <script src="base64.js"></script>
+    
+    <script>
+
+      var stage;
+      var layer;
+      var selected;
+      var wasSelected;
+
+      function initCanvas(id) {
+          // Create the canvas element
+          stage = new Kinetic.Stage(id, 850, 500);
+          layer = new Kinetic.Layer();
+          stage.add(layer);
+          stage.draw();
+      }
+
+      function resize(group, activeAnchor) {
+          var tl = group.getChild("tl");
+          var tr = group.getChild("tr");
+          var bl = group.getChild("bl");
+          var br = group.getChild("br");
+          var image = group.getChild("image");
+
+          // Update the positions of the resizeAnchors
+          var r;
+          var a = group.getRotation();
+          //alert(a);
+          //alert(group.getRotation());
+       
+          switch (activeAnchor.name) {
+          case "tl":
+              bl.x = tl.x;
+              bl.y = br.y;
+              tr.x = br.x;
+              tr.y = tl.y;
+              break;
+          case "tr":
+              br.x = tr.x;
+              br.y = bl.y;
+              tl.x = bl.x;
+              tl.y = tr.y;
+              break;
+          case "bl":
+              br.x = tr.x;
+              br.y = bl.y;
+              tl.x = bl.x;
+              tl.y = tr.y;
+              break;
+          case "br":
+              bl.x = tl.x;
+              bl.y = br.y;
+              tr.x = br.x;
+              tr.y = tl.y;
+              break;
+          }
+          image.x = tl.x;
+          image.y = tl.y;
+          image.width = tr.x - tl.x;
+          image.height = bl.y - tl.y;
+      }
+
+      function addResizeAnchor(group, x, y, name) {
+        var color;
+        switch (name) {
+          case "tl":
+              color = "#DD4B39";
+              break;
+          case "tr":
+              color = "3366CC";
+              break;
+          case "bl":
+              color = "999999";
+              break;
+          case "br":
+              color = "333333";
+              break;
+          }
+          // Create the anchor
+          var anchor = new Kinetic.Shape(function() {
+              var ctx = this.getContext();
+              ctx.beginPath();
+              ctx.lineWidth = this.lineWidth;
+              ctx.strokeStyle = color;
+              ctx.fillStyle = "#ddd";
+              ctx.arc(0, 0, 5.5, 0, 2 * Math.PI, false);
+              ctx.closePath();
+              ctx.fill();
+              ctx.stroke();
+          }, name);
+
+          // Position the anchor and make it draggable
+          anchor.setPosition(x, y);
+          anchor.draggable(true);
+
+          // Handle the resizing of the img
+          anchor.on("dragmove", function() {
+              resize(group, this);
+          });
+          anchor.on("mousedown", function() {
+              group.draggable(false);
+              this.moveToTop();
+          });
+          anchor.on("dragend", function() {
+              group.draggable(true);
+          });
+
+          // Update cursor and border on mouseover
+          anchor.lineWidth = 2;
+
+          anchor.on("mouseover", function() {
+              document.body.style.cursor = "pointer";
+              this.lineWidth = 3;
+              layer.draw();
+          });
+
+          anchor.on("mouseout", function() {
+              document.body.style.cursor = "default";
+              this.lineWidth = 2;
+              layer.draw();
+          });
+
+          // Hide the anchors(its not selected at the start) and add it to the group
+          anchor.hide();
+          group.add(anchor);
+      }
+
+      function updateSelected() {
+          // Deselect the old img if there was any
+          if (wasSelected) {
+              wasSelected.getChild("tl").hide();
+              wasSelected.getChild("tr").hide();
+              wasSelected.getChild("br").hide();
+              wasSelected.getChild("bl").hide();
+          }
+
+          // Select the new image
+          selected.getChild("tl").show();
+          selected.getChild("tr").show();
+          selected.getChild("br").show();
+          selected.getChild("bl").show();
+      }
+
+
+      function initImage(img) {
+          // Make a group for all the elements (img + anchors)
+          var kimggroup = new Kinetic.Group();
+          layer.add(kimggroup);
+
+          // Make the img and add it to the group
+          var kimg = new Kinetic.Shape(function() {
+              var ctx = this.getContext();
+              ctx.drawImage(img, 0, 0, kimg.width, kimg.height);
+              ctx.beginPath();
+              ctx.rect(0, 0, kimg.width, kimg.height);
+              ctx.closePath();
+          }, "image");
+          kimg.width = img.width;
+          kimg.height = img.height;
+          kimggroup.add(kimg);
+
+          // Add anchors for resizing
+          addResizeAnchor(kimggroup, 2, 2, "tl");
+          addResizeAnchor(kimggroup, img.width - 2, 2, "tr");
+          addResizeAnchor(kimggroup, img.width - 2, img.height - 2, "br");
+          addResizeAnchor(kimggroup, 2, img.height - 2, "bl");
+
+          // Makle the image draggable
+          kimggroup.draggable(true);
+          kimggroup.setPosition(100, 100);
+
+          // On click make the image selected
+          kimggroup.on("mousedown", function() {
+              wasSelected = selected;
+              selected = this;
+              updateSelected();
+              this.moveToTop();
+              kimggroup.setRotation(Math.PI/16);
+              stage.draw();
+          });
+
+          // Update cursor on mouseover
+          kimg.on("mouseover", function() {
+              document.body.style.cursor = "move";
+          });
+
+          kimg.on("mouseout", function() {
+              document.body.style.cursor = "default";
+          });
+
+          // Draw the img
+          stage.draw();
+      }
+
+
+      function loadImage(source) {
+          // Create an img element
+          var img = new Image();
+          img.onload = function() {
+              initImage(img);
+          };
+          img.src = source;
+      }
+
+      function addGabby() {
+        // Add clicked image
+        var img = document.getElementById('gabby');
+        initImage(img); 
+      }
+
+      window.onload = function() {
+          initCanvas("container");
+      };
+
+    </script>
+  </head>
+  <body onmousedown="return false;">
+    <div id="right" style="float: right;">
+      <img src="image.jpg" name="gabby" id="gabby" onClick="addGabby()" /><br /><br />
+      <a href="#" name="downloadcanvas" id="downloadcanvas" onClick="downloadCanvas()">download</a><br /><br />
+      <a href="#" name="clearcanvas" id="clearcanvas" onClick="clearCanvas()">clear</a>
+    </div><!-- #right -->
+    <div role="main">
+      <div id="container">
+      </div><!-- #container -->
+    </div><!-- main -->
+  </body>
+</html>
