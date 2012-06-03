@@ -370,22 +370,53 @@
       /*
        * Add clicked images to the canvas
        */
-      function addGabby(name) {
+      function addClickedImage(name) {
         var img = document.getElementById(name);
         initImage(img); 
       }
 
       
+      /*
+       * Listen for images dragged into canvas and add them
+       */
+      function setupDragAndDrop() {
+        var dragimg = new Image();
+        // To enable drag and drop
+        stage.content.addEventListener("dragover", function (evt) {
+          evt.preventDefault();
+        }, false);
+
+        // Handle dropped image file - only Firefox and Google Chrome
+        stage.content.addEventListener("drop", function (evt) {
+          var files = evt.dataTransfer.files;
+          if (files.length > 0) {
+            var file = files[0];
+            if (typeof FileReader !== "undefined" && file.type.indexOf("image") != -1) {
+              var reader = new FileReader();
+              reader.onload = function (evt) {
+                dragimg.src = evt.target.result;
+              };
+              reader.readAsDataURL(file);
+              dragimg.onload = function(){
+                initImage(this);
+              }
+            }
+          }
+          evt.preventDefault();
+        }, false);
+      }
+       
       
       window.onload = function() {
         initCanvas("container");
+        setupDragAndDrop();
       };
 
     </script>
   </head>
   <body onmousedown="return false;">
     <div id="right" style="float: right;">
-      <img src="image.jpg" name="gabby" id="gabby" onClick="addGabby('gabby')" /><br /><br />
+      <img src="image.jpg" name="gabby" id="gabby" onClick="addClickedImage('gabby')" /><br /><br />
       <a href="#" name="downloadcanvas" id="downloadcanvas" onClick="downloadCanvas()">download</a><br /><br />
       <a href="#" name="clearcanvas" id="clearcanvas" onClick="clearCanvas()">clear</a>
     </div><!-- #right -->
