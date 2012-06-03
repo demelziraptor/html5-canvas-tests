@@ -2,6 +2,8 @@ HTML5 Canvas Tests with Kineticjs
 =================================
 
 Code is based on tutorial: http://www.html5canvastutorials.com/labs/html5-canvas-drag-and-drop-resize-and-invert-images/
+And code example:
+http://jsbin.com/abejab/3/edit#source
 
 
 Features to test
@@ -25,12 +27,13 @@ Currently working
 -----------------
 - Drag image from computer
 - Click image from same website
+- Multiple images from different sources
 - Resize
-- Rotate (positive only)
+- Rotate
 - Delete (double click)
+- Flip
 
 
 Currently broken
 ----------------
-- Multiple images from different sources (multiple images from computer broken)
-- Negative rotation
+- Multiple rotate/resize/flip changes causes jumpiness
