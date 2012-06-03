@@ -77,15 +77,15 @@
             break;
           }
           
-          handle.attrs.x = tr.attrs.x / 2
-          handle.attrs.y = tr.attrs.y
-          ghost.attrs.x = handle.attrs.x
-          ghost.attrs.y = handle.attrs.y
+          handle.attrs.x = tr.attrs.x / 2;
+          handle.attrs.y = tr.attrs.y - 20;
+          ghost.attrs.x = handle.attrs.x;
+          ghost.attrs.y = handle.attrs.y;
           
           image.attrs.x = tl.attrs.x;
           image.attrs.y = tl.attrs.y;
-          image.width = tr.attrs.x - tl.attrs.x;
-          image.height = bl.attrs.y - tl.attrs.y;
+          image.attrs.width = tr.attrs.x - tl.attrs.x;
+          image.attrs.height = bl.attrs.y - tl.attrs.y;
       }
       
       
