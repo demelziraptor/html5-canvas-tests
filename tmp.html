@@ -92,8 +92,21 @@
       /*
        * Rotate
        */
-      function rotate() {
-      
+      function rotate(group) {
+        var c = group.getAbsolutePosition();
+        var p0 = {x: c.x, y: c.y - 50};
+        var p1 = stage.getUserPosition();
+        
+        var p0c = Math.sqrt(Math.pow(c.x-p0.x,2) + Math.pow(c.y-p0.y,2)); // p0->c (b)   
+        var p1c = Math.sqrt(Math.pow(c.x-p1.x,2) + Math.pow(c.y-p1.y,2)); // p1->c (a)
+        var p0p1 = Math.sqrt(Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2)); // p0->p1 (c)
+        
+        var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
+
+        group.setRotation(deg);
+        
+        ghost.attrs.x = handle.attrs.x;
+        ghost.attrs.y = handle.attrs.y;
       }
       
       
@@ -159,7 +172,7 @@
        * Create anchor and add to group
        */
       function addAnchor(group, x, y, name) {
-        config = {
+        var config = {
           x: x,
           y: y,
           stroke: "#666", 
@@ -171,10 +184,10 @@
         }
         switch (name) {
           case "handle":
+            config.draggable = false;
             var anchor = addRotateAnchor(group, config);
             break;
           case "ghost":
-            config.draggable = false;
             config.stroke = "#993333";
             var anchor = addRotateGhostAnchor(group, config);
             break;
@@ -248,7 +261,7 @@
         var anchor = new Kinetic.Circle(config);
         
         anchor.on("dragmove", function() {
-          update(group, this);
+          rotate(group);
           layer.draw();
         });
         anchor.on("mousedown touchstart", function() {
