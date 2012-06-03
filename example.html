@@ -37,6 +37,8 @@
           var tr = group.getChild("tr");
           var bl = group.getChild("bl");
           var br = group.getChild("br");
+          var handle = group.getChild("handle");
+          var ghost = group.getChild("ghost");
           var image = group.getChild("image");
 
           // Update the positions of the resizeAnchors
@@ -71,6 +73,12 @@
               tr.y = tl.y;
               break;
           }
+          
+          handle.x = tr.x / 2
+          handle.y = tr.y
+          ghost.x = handle.x
+          ghost.y = handle.y
+          
           image.x = tl.x;
           image.y = tl.y;
           image.width = tr.x - tl.x;
@@ -78,8 +86,17 @@
       }
       
       function rotate(group, activeAnchor) {
-      
-      
+            var c = group.getAbsolutePosition();
+            var p0 = {x: c.x, y: c.y - 50};
+            var p1 = stage.getUserPosition();
+            
+            var p0c = Math.sqrt(Math.pow(c.x-p0.x,2) + Math.pow(c.y-p0.y,2)); // p0->c (b)   
+            var p1c = Math.sqrt(Math.pow(c.x-p1.x,2) + Math.pow(c.y-p1.y,2)); // p1->c (a)
+            var p0p1 = Math.sqrt(Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2)); // p0->p1 (c)
+            
+            var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
+
+            group.setRotation(deg);
       }
 
       function addResizeAnchor(group, x, y, name) {
@@ -274,8 +291,8 @@
           addResizeAnchor(kimggroup, img.width - 2, 2, "tr");
           addResizeAnchor(kimggroup, img.width - 2, img.height - 2, "br");
           addResizeAnchor(kimggroup, 2, img.height - 2, "bl");
-          addRotateAnchor(kimggroup, img.width / 2, -20, "handle");
-          addRotateAnchor(kimggroup, img.width / 2, -20,  "ghost");
+          addRotateAnchor(kimggroup, img.width / 2, 2, "handle");
+          addRotateAnchor(kimggroup, img.width / 2, 2,  "ghost");
 
           // Makle the image draggable
           kimggroup.draggable(true);
@@ -287,7 +304,7 @@
               selected = this;
               updateSelected();
               this.moveToTop();
-              //kimggroup.setRotation(Math.PI/16);
+              kimggroup.setRotation(Math.PI/16);
               stage.draw();
           });
 
