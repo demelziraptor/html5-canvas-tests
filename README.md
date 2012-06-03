@@ -25,7 +25,7 @@ Currently working
 -----------------
 - Drag image from computer
 - Click image from same website
-- Resize (when not rotated)
+- Resize
 - Rotate (positive only)
 - Delete (double click)
 
@@ -33,5 +33,4 @@ Currently working
 Currently broken
 ----------------
 - Multiple images from different sources (multiple images from computer broken)
-- Resize image after rotation
 - Negative rotation

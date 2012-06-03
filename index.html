@@ -70,51 +70,8 @@
             
             var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
 
-            image.setRotation(deg);
-            
-            var handles = new Array(topLeft, topRight, bottomLeft, bottomRight, spin);
-            for (var i=0; i < handles.length; i++) {
-            
-              switch (handles[i].getName()) {
-                case "topLeft":
-                  var tmpx = image.getAbsolutePosition().x - (image.attrs.width / 2);
-                  var tmpy = image.getAbsolutePosition().y - (image.attrs.height / 2);
-                  var orig = {x: tmpx, y: tmpy};
-                  break;
-                case "topRight":
-                  var tmpx = image.getAbsolutePosition().x + (image.attrs.width / 2);
-                  var tmpy = image.getAbsolutePosition().y - (image.attrs.height / 2);
-                  var orig = {x: tmpx, y: tmpy};
-                  break;
-                case "bottomLeft":
-                  var tmpx = image.getAbsolutePosition().x - (image.attrs.width / 2);
-                  var tmpy = image.getAbsolutePosition().y + (image.attrs.height / 2);
-                  var orig = {x: tmpx, y: tmpy};
-                  break;
-                case "bottomRight":
-                  var tmpx = image.getAbsolutePosition().x + (image.attrs.width / 2);
-                  var tmpy = image.getAbsolutePosition().y + (image.attrs.height / 2);
-                  var orig = {x: tmpx, y: tmpy};
-                  break;
-                case "spin":
-                  var tmpx = image.getAbsolutePosition().x;
-                  var tmpy = image.getAbsolutePosition().y - (image.attrs.height / 2) - 20;
-                  var orig = {x: tmpx, y: tmpy};
-                  break;
-              }
-              //var orig = handles[i].getAbsolutePosition();
-              
-              var dx = orig.x - c.x;
-              var dy = orig.y - c.y;
-              
-              var dx1 = (dx * Math.cos(deg)) - (dy * Math.sin(deg));
-              var dy1 = (dx * Math.sin(deg)) + (dy * Math.cos(deg));
-              
-              var x = dx1 + c.x;
-              var y = dy1 + c.y;
-              
-              handles[i].setAbsolutePosition(x, y);
-            }
+            group.setRotation(deg);
+
             break;
         }
 
