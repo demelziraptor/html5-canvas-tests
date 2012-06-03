@@ -169,6 +169,12 @@
         kimg.on("mouseout", function() {
           document.body.style.cursor = "default";
         });
+        
+        // Double click to remove
+        kimg.on("dblclick dbltap", function() {
+          layer.remove(kimggroup);
+          layer.draw();
+        });
 
         // Draw the img
         //stage.add(layer);
