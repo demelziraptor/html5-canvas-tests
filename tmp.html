@@ -47,6 +47,7 @@
         var bl = group.get(".bl")[0];
         var handle = group.get(".handle")[0];
         var ghost = group.get(".ghost")[0];
+        var flip = group.get(".flip")[0];
         var image = group.get(".image")[0];
 
         switch (activeAnchor.attrs.name) {
@@ -70,6 +71,7 @@
           
           handle.setPosition((tr.attrs.x + tl.attrs.x) / 2, tl.attrs.y - 20);
           ghost.setPosition(handle.getPosition());
+          flip.setPosition((tr.attrs.x + tl.attrs.x) / 2, bl.attrs.y + 20);
           
           image.setPosition(tl.attrs.x, tl.attrs.y);
           image.attrs.width = tr.attrs.x - tl.attrs.x;
@@ -96,6 +98,14 @@
           deg = (360 * (Math.PI/180)) - deg;
         }
         group.setRotation(deg);
+      }
+      
+      
+      /*
+       * Flip
+       */
+      function flip(group) {
+        group.attrs.scale.x = group.attrs.scale.x * -1;
       }
       
       
@@ -150,6 +160,7 @@
         addAnchor(kimggroup, 0, img.height, "bl");
         addAnchor(kimggroup, img.width / 2, -20, "handle");
         addAnchor(kimggroup, img.width / 2, -20,  "ghost");
+        addAnchor(kimggroup, img.width / 2, img.height +20,  "flip");
 
         // On click make the image selected
         kimggroup.on("mousedown", function() {
@@ -204,6 +215,11 @@
           case "ghost":
             config.stroke = "#993333";
             var anchor = addRotateGhostAnchor(group, config);
+            break;
+          case "flip":
+            config.stroke = "#0000ff";
+            config.draggable = false;
+            var anchor = addFlipAnchor(group, config);
             break;
           default:
             var anchor = addResizeAnchor(group, config);
@@ -287,6 +303,32 @@
           var handle = group.get(".handle")[0];
           this.setPosition(handle.getPosition());
           group.draggable(true);
+          layer.draw();
+        });
+        
+        anchor.on("mouseover", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "pointer";
+          this.setStrokeWidth(3);
+          layer.draw();
+        });
+        anchor.on("mouseout", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "default";
+          this.setStrokeWidth(2);
+          layer.draw();
+        });
+        return anchor;
+      }
+      
+      /*
+       * Set up flip anchor
+       */
+      function addFlipAnchor(group, config) {
+        var anchor = new Kinetic.Circle(config);
+        
+        anchor.on("mousedown touchstart", function() {
+          flip(group);
           layer.draw();
         });
         
