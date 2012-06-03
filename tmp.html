@@ -104,9 +104,6 @@
         var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
 
         group.setRotation(deg);
-        
-        ghost.attrs.x = handle.attrs.x;
-        ghost.attrs.y = handle.attrs.y;
       }
       
       
@@ -262,6 +259,9 @@
         
         anchor.on("dragmove", function() {
           rotate(group);
+          var handle = group.get(".handle")[0];
+          this.attrs.x = handle.attrs.x;
+          this.attrs.y = handle.attrs.y;
           layer.draw();
         });
         anchor.on("mousedown touchstart", function() {
