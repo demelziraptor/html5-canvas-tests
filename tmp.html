@@ -27,9 +27,9 @@
        */
       function initCanvas(id) {
         stage = new Kinetic.Stage({
-        container: id,
-        width: 850,
-        height: 500
+          container: id,
+          width: 850,
+          height: 500
         });
         layer = new Kinetic.Layer();
         stage.add(layer);
@@ -41,10 +41,18 @@
        * Clear canvas, start again
        */
       function clearCanvas() {
-        stage.reset();
-        layer = new Kinetic.Layer();
-        stage.add(layer);
-        stage.draw();
+        layer.removeChildren();
+        layer.draw();
+      }
+      
+      
+      /*
+       * Download canvas
+       */
+      function downloadCanvas() {
+        var canvas = stage.children[0].canvas;
+        var oImgPNG = Canvas2Image.saveAsPNG(canvas, true);
+        document.body.appendChild(oImgPNG);
       }
       
       
