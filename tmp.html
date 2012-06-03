@@ -38,6 +38,17 @@
       
       
       /*
+       * Clear canvas, start again
+       */
+      function clearCanvas() {
+        stage.reset();
+        layer = new Kinetic.Layer();
+        stage.add(layer);
+        stage.draw();
+      }
+      
+      
+      /*
        * Resize
        */
       function resize(group, activeAnchor) {
