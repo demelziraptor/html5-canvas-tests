@@ -263,9 +263,6 @@
         
         anchor.on("dragmove", function() {
           rotate(group);
-          var handle = group.get(".handle")[0];
-          this.attrs.x = handle.attrs.x;
-          this.attrs.y = handle.attrs.y;
           layer.draw();
         });
         anchor.on("mousedown touchstart", function() {
@@ -273,6 +270,9 @@
           this.moveToTop();
         });
         anchor.on("dragend", function() {
+          var handle = group.get(".handle")[0];
+          this.attrs.x = handle.attrs.x;
+          this.attrs.y = handle.attrs.y;
           group.draggable(true);
           layer.draw();
         });
