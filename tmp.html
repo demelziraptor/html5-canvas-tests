@@ -38,6 +38,66 @@
       
       
       /*
+       * Resize
+       */
+      function resize(group, activeAnchor) {
+        var tl = group.get(".tl")[0];
+        var tr = group.get(".tr")[0];
+        var br = group.get(".br")[0];
+        var bl = group.get(".bl")[0];
+        var handle = group.get(".handle")[0];
+        var ghost = group.get(".ghost")[0];
+        var image = group.get(".image")[0];
+
+        switch (activeAnchor.attrs.name) {
+          case "tl":
+            //bl.setPosition(tl.attrs.x, br.attrs.y);
+            bl.attrs.x = tl.attrs.x;
+            bl.attrs.y = br.attrs.y;
+            tr.attrs.x = br.attrs.x;
+            tr.attrs.y = tl.attrs.y;
+            break;
+          case "tr":
+            br.attrs.x = tr.attrs.x;
+            br.attrs.y = bl.attrs.y;
+            tl.attrs.x = bl.attrs.x;
+            tl.attrs.y = tr.attrs.y;
+            break;
+          case "bl":
+            br.attrs.x = tr.attrs.x;
+            br.attrs.y = bl.attrs.y;
+            tl.attrs.x = bl.attrs.x;
+            tl.attrs.y = tr.attrs.y;
+            break;
+          case "br":
+            bl.attrs.x = tl.attrs.x;
+            bl.attrs.y = br.attrs.y;
+            tr.attrs.x = br.attrs.x;
+            tr.attrs.y = tl.attrs.y;
+            break;
+          }
+          
+          handle.attrs.x = tr.attrs.x / 2
+          handle.attrs.y = tr.attrs.y
+          ghost.attrs.x = handle.attrs.x
+          ghost.attrs.y = handle.attrs.y
+          
+          image.attrs.x = tl.attrs.x;
+          image.attrs.y = tl.attrs.y;
+          image.width = tr.attrs.x - tl.attrs.x;
+          image.height = bl.attrs.y - tl.attrs.y;
+      }
+      
+      
+      /*
+       * Rotate
+       */
+      function rotate() {
+      
+      }
+      
+      
+      /*
        * Add an image plus anchors to the canvas using group
        */
       function initImage(img) {
@@ -45,7 +105,8 @@
         var kimggroup = new Kinetic.Group({
           x: 300,
           y: 300,
-          draggable: true
+          draggable: true,
+          centerOffset: [img.width/2, img.height/2]
         });
         layer.add(kimggroup);
         stage.add(layer);
@@ -57,18 +118,17 @@
           image: img,
           width: img.width,
           height: img.height,
-          name: "image",
-          centerOffset: [img.width/2, img.height/2]
+          name: "image"
         });
         kimggroup.add(kimg);
 
         // Add anchors for resizing and rotation
-        addAnchor(kimggroup, img.width / -2, img.height / -2, "tl");
-        addAnchor(kimggroup, img.width / 2, img.height / -2, "tr");
-        addAnchor(kimggroup, img.width / 2, img.height / 2, "br");
-        addAnchor(kimggroup, img.width / -2, img.height / 2, "bl");
-        addAnchor(kimggroup, 0, (img.height / -2) - 20, "handle");
-        addAnchor(kimggroup, 0, (img.height / -2) - 20,  "ghost");
+        addAnchor(kimggroup, 0, 0, "tl");
+        addAnchor(kimggroup, img.width, 0, "tr");
+        addAnchor(kimggroup, img.width, img.height, "br");
+        addAnchor(kimggroup, 0, img.height, "bl");
+        addAnchor(kimggroup, img.width / 2, -20, "handle");
+        addAnchor(kimggroup, img.width / 2, -20,  "ghost");
 
         // On click make the image selected
         kimggroup.on("mousedown", function() {
@@ -165,19 +225,6 @@
        */
       function addRotateAnchor(group, config) {
         var anchor = new Kinetic.Circle(config);
-        
-        anchor.on("dragmove", function() {
-          update(group, this);
-          layer.draw();
-        });
-        anchor.on("mousedown touchstart", function() {
-          group.draggable(false);
-          this.moveToTop();
-        });
-        anchor.on("dragend", function() {
-          group.draggable(true);
-          layer.draw();
-        });
         
         anchor.on("mouseover", function() {
           var layer = this.getLayer();
