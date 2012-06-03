@@ -147,7 +147,7 @@
           group.add(anchor);
       }
       
-      function addRotateAnchor(group, x, y, name, type) {
+      function addRotateAnchor(group, x, y, name) {
         var color;
         switch (name) {
           case "handle":
@@ -156,27 +156,29 @@
           case "ghost":
               color = "3366CC";
               break;
-          }
-          // Create the anchor
-          var anchor = new Kinetic.Shape(function() {
-              var ctx = this.getContext();
-              ctx.beginPath();
-              ctx.lineWidth = this.lineWidth;
-              ctx.strokeStyle = color;
-              ctx.fillStyle = "#ddd";
-              ctx.arc(0, 0, 5.5, 0, 2 * Math.PI, false);
-              ctx.closePath();
-              ctx.fill();
-              ctx.stroke();
-          }, name);
+         }
+        // Create the anchor
+        var anchor = new Kinetic.Shape(function() {
+            var ctx = this.getContext();
+            ctx.beginPath();
+            ctx.lineWidth = this.lineWidth;
+            ctx.strokeStyle = color;
+            ctx.fillStyle = "#ddd";
+            ctx.arc(0, 0, 5.5, 0, 2 * Math.PI, false);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }, name);
 
+        if (name == "ghost") {
+        
           // Position the anchor and make it draggable
           anchor.setPosition(x, y);
           anchor.draggable(true);
 
           // Handle the resizing of the img
           anchor.on("dragmove", function() {
-              resize(group, this);
+              rotate(group, this);
           });
           anchor.on("mousedown", function() {
               group.draggable(false);
@@ -200,10 +202,33 @@
               this.lineWidth = 2;
               layer.draw();
           });
+        
+        } else {
+        
+          // Position the anchor and make it draggable
+          anchor.setPosition(x, y);
+          anchor.draggable(false);
 
-          // Hide the anchors(its not selected at the start) and add it to the group
-          anchor.hide();
-          group.add(anchor);
+          // Update cursor and border on mouseover
+          anchor.lineWidth = 2;
+
+          anchor.on("mouseover", function() {
+              document.body.style.cursor = "pointer";
+              this.lineWidth = 3;
+              layer.draw();
+          });
+
+          anchor.on("mouseout", function() {
+              document.body.style.cursor = "default";
+              this.lineWidth = 2;
+              layer.draw();
+          });
+        
+        }
+
+        // Hide the anchors(its not selected at the start) and add it to the group
+        anchor.hide();
+        group.add(anchor);
       }
 
       function updateSelected() {
@@ -213,6 +238,8 @@
               wasSelected.getChild("tr").hide();
               wasSelected.getChild("br").hide();
               wasSelected.getChild("bl").hide();
+              wasSelected.getChild("handle").hide();
+              wasSelected.getChild("ghost").hide();
           }
 
           // Select the new image
@@ -220,6 +247,8 @@
           selected.getChild("tr").show();
           selected.getChild("br").show();
           selected.getChild("bl").show();
+          selected.getChild("handle").show();
+          selected.getChild("ghost").show();
       }
 
 
@@ -245,7 +274,8 @@
           addResizeAnchor(kimggroup, img.width - 2, 2, "tr");
           addResizeAnchor(kimggroup, img.width - 2, img.height - 2, "br");
           addResizeAnchor(kimggroup, 2, img.height - 2, "bl");
-          addRe
+          addRotateAnchor(kimggroup, img.width / 2, -20, "handle");
+          addRotateAnchor(kimggroup, img.width / 2, -20,  "ghost");
 
           // Makle the image draggable
           kimggroup.draggable(true);
@@ -257,7 +287,7 @@
               selected = this;
               updateSelected();
               this.moveToTop();
-              kimggroup.setRotation(Math.PI/16);
+              //kimggroup.setRotation(Math.PI/16);
               stage.draw();
           });
 
