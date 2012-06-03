@@ -1,0 +1,259 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Test Page</title>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      canvas {
+        border: 1px solid #9C9898;
+      }
+    </style>
+    <script src="kinetic-v3.9.7.min.js"></script>
+    <script src="canvas2image.js"></script>
+    <script src="base64.js"></script>
+    
+    <script>
+
+      var stage;
+      var layer;
+      var selected;
+      var wasSelected;
+
+      /*
+       * Set up canvas stage and layer
+       */
+      function initCanvas(id) {
+        stage = new Kinetic.Stage({
+        container: id,
+        width: 850,
+        height: 500
+        });
+        layer = new Kinetic.Layer();
+        stage.add(layer);
+        stage.draw();
+      }
+      
+      
+      /*
+       * Add an image plus anchors to the canvas using group
+       */
+      function initImage(img) {
+        // Make a group for all the elements (img + anchors)
+        var kimggroup = new Kinetic.Group({
+          x: 300,
+          y: 300,
+          draggable: true
+        });
+        layer.add(kimggroup);
+        stage.add(layer);
+
+        // Make the img and add it to the group
+        var kimg = new Kinetic.Image({
+          x: 0,
+          y: 0,
+          image: img,
+          width: img.width,
+          height: img.height,
+          name: "image",
+          centerOffset: [img.width/2, img.height/2]
+        });
+        kimggroup.add(kimg);
+
+        // Add anchors for resizing and rotation
+        addAnchor(kimggroup, img.width / -2, img.height / -2, "tl");
+        addAnchor(kimggroup, img.width / 2, img.height / -2, "tr");
+        addAnchor(kimggroup, img.width / 2, img.height / 2, "br");
+        addAnchor(kimggroup, img.width / -2, img.height / 2, "bl");
+        addAnchor(kimggroup, 0, (img.height / -2) - 20, "handle");
+        addAnchor(kimggroup, 0, (img.height / -2) - 20,  "ghost");
+
+        // On click make the image selected
+        kimggroup.on("mousedown", function() {
+          wasSelected = selected;
+          selected = this;
+          //updateSelected();
+          this.moveToTop();
+          //kimggroup.setRotation(Math.PI/16);
+          stage.draw();
+        });
+
+        // Update cursor on mouseover
+        kimg.on("mouseover", function() {
+          document.body.style.cursor = "move";
+        });
+
+        kimg.on("mouseout", function() {
+          document.body.style.cursor = "default";
+        });
+
+        // Draw the img
+        //stage.add(layer);
+        stage.draw();
+      }
+      
+      
+      /*
+       * Create anchor and add to group
+       */
+      function addAnchor(group, x, y, name) {
+        config = {
+          x: x,
+          y: y,
+          stroke: "#666", 
+          fill: "#ddd", 
+          strokeWidth: 2, 
+          radius: 4, 
+          name: name, 
+          draggable: true
+        }
+        switch (name) {
+          case "handle":
+            var anchor = addRotateAnchor(group, config);
+            break;
+          case "ghost":
+            config.draggable = false;
+            config.stroke = "#993333";
+            var anchor = addRotateGhostAnchor(group, config);
+            break;
+          default:
+            var anchor = addResizeAnchor(group, config);
+            break;
+        }
+        //anchor.hide();
+        group.add(anchor);
+      }
+      
+      /*
+       * Set up resize anchor
+       */
+      function addResizeAnchor(group, config) {
+        var anchor = new Kinetic.Circle(config);
+        
+        anchor.on("dragmove", function() {
+          resize(group, this);
+          layer.draw();
+        });
+        anchor.on("mousedown touchstart", function() {
+          group.draggable(false);
+          this.moveToTop();
+        });
+        anchor.on("dragend", function() {
+          group.draggable(true);
+          layer.draw();
+        });
+        
+        anchor.on("mouseover", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "pointer";
+          this.setStrokeWidth(3);
+          layer.draw();
+        });
+        anchor.on("mouseout", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "default";
+          this.setStrokeWidth(2);
+          layer.draw();
+        });
+        return anchor;
+      }
+      
+      /*
+       * Set up rotation anchor
+       */
+      function addRotateAnchor(group, config) {
+        var anchor = new Kinetic.Circle(config);
+        
+        anchor.on("dragmove", function() {
+          update(group, this);
+          layer.draw();
+        });
+        anchor.on("mousedown touchstart", function() {
+          group.draggable(false);
+          this.moveToTop();
+        });
+        anchor.on("dragend", function() {
+          group.draggable(true);
+          layer.draw();
+        });
+        
+        anchor.on("mouseover", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "pointer";
+          this.setStrokeWidth(3);
+          layer.draw();
+        });
+        anchor.on("mouseout", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "default";
+          this.setStrokeWidth(2);
+          layer.draw();
+        });
+        return anchor;
+      }
+      
+      /*
+       * Set up rotation ghost anchor
+       */
+      function addRotateGhostAnchor(group, config) {
+        var anchor = new Kinetic.Circle(config);
+        
+        anchor.on("dragmove", function() {
+          update(group, this);
+          layer.draw();
+        });
+        anchor.on("mousedown touchstart", function() {
+          group.draggable(false);
+          this.moveToTop();
+        });
+        anchor.on("dragend", function() {
+          group.draggable(true);
+          layer.draw();
+        });
+        
+        anchor.on("mouseover", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "pointer";
+          this.setStrokeWidth(3);
+          layer.draw();
+        });
+        anchor.on("mouseout", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "default";
+          this.setStrokeWidth(2);
+          layer.draw();
+        });
+        return anchor;
+      }
+      
+      
+      /*
+       * Add clicked images to the canvas
+       */
+      function addGabby(name) {
+        var img = document.getElementById(name);
+        initImage(img); 
+      }
+
+      
+      
+      window.onload = function() {
+        initCanvas("container");
+      };
+
+    </script>
+  </head>
+  <body onmousedown="return false;">
+    <div id="right" style="float: right;">
+      <img src="image.jpg" name="gabby" id="gabby" onClick="addGabby('gabby')" /><br /><br />
+      <a href="#" name="downloadcanvas" id="downloadcanvas" onClick="downloadCanvas()">download</a><br /><br />
+      <a href="#" name="clearcanvas" id="clearcanvas" onClick="clearCanvas()">clear</a>
+    </div><!-- #right -->
+    <div role="main">
+      <div id="container">
+      </div><!-- #container -->
+    </div><!-- main -->
+  </body>
+</html>

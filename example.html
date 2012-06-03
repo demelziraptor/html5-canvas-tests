@@ -12,8 +12,8 @@
         border: 1px solid #9C9898;
       }
     </style>
-    <!--<script src="kinetic-v3.9.7.min.js"></script>-->
-    <script src="http://www.kineticjs.com/download/kinetic-v3.8.0.min.js"></script>
+    <script src="kinetic-v3.9.7.min.js"></script>
+    <!--<script src="http://www.kineticjs.com/download/kinetic-v3.8.0.min.js"></script>-->
     <script src="canvas2image.js"></script>
     <script src="base64.js"></script>
     
@@ -26,9 +26,13 @@
 
       function initCanvas(id) {
           // Create the canvas element
-          stage = new Kinetic.Stage(id, 850, 500);
+          stage = new Kinetic.Stage({
+            container: "container",
+            width: 850,
+            height: 500
+          });
           layer = new Kinetic.Layer();
-          stage.add(layer);
+          //stage.add(layer);
           stage.draw();
       }
 
@@ -271,10 +275,17 @@
 
       function initImage(img) {
           // Make a group for all the elements (img + anchors)
-          var kimggroup = new Kinetic.Group();
+          //var kimggroup = new Kinetic.Group();
+          var kimggroup = new Kinetic.Group({
+            x: 300,
+            y: 300,
+            draggable: true
+          });
           layer.add(kimggroup);
+          stage.add(layer);
 
           // Make the img and add it to the group
+          /*
           var kimg = new Kinetic.Shape(function() {
               var ctx = this.getContext();
               ctx.drawImage(img, 0, 0, kimg.width, kimg.height);
@@ -284,6 +295,16 @@
           }, "image");
           kimg.width = img.width;
           kimg.height = img.height;
+          */
+          var kimg = new Kinetic.Image({
+            x: 0,
+            y: 0,
+            image: img,
+            width: img.width,
+            height: img.height,
+            name: "image"
+          });
+          
           kimggroup.add(kimg);
 
           // Add anchors for resizing
@@ -294,9 +315,9 @@
           addRotateAnchor(kimggroup, img.width / 2, 2, "handle");
           addRotateAnchor(kimggroup, img.width / 2, 2,  "ghost");
 
-          // Makle the image draggable
-          kimggroup.draggable(true);
-          kimggroup.setPosition(100, 100);
+          // Make the image draggable
+          //kimggroup.draggable(true);
+          //kimggroup.setPosition(100, 100);
 
           // On click make the image selected
           kimggroup.on("mousedown", function() {
@@ -318,6 +339,7 @@
           });
 
           // Draw the img
+          //stage.add(layer);
           stage.draw();
       }
 

@@ -16,9 +16,6 @@
     <script src="base64.js"></script>
     
     <script>
-      /*
-       * Updates position of images in group after drag, resize or rotation
-       */
       function update(group, activeAnchor) {
         var topLeft = group.get(".topLeft")[0];
         var topRight = group.get(".topRight")[0];
@@ -31,48 +28,36 @@
         // update anchor positions
         switch (activeAnchor.getName()) {
           case "topLeft":
-            var orig = getAnchorPosition("topLeft", image);
-            var current = activeAnchor.getAbsolutePosition();
-            var diff = {x: orig.x - current.x, y: orig.y - current.y};
-            
-            adjustAnchorPosition(topRight, diff, image);
-            adjustAnchorPosition(bottomLeft, diff, image);
-            adjustAnchorPosition(spin, diff, image);
-            
-            ghost.setAbsolutePosition(spin.attrs.x, spin.attrs.y);
+            topRight.attrs.y = activeAnchor.attrs.y;
+            bottomLeft.attrs.x = activeAnchor.attrs.x;
+            spin.attrs.y = activeAnchor.attrs.y - 20;
+            spin.attrs.x = activeAnchor.attrs.x + (image.attrs.width / 2);
+            ghost.attrs.x = spin.attrs.x;
+            ghost.attrs.y = spin.attrs.y;
             break;
           case "topRight":
-            orig = getAnchorPosition("topRight", image);
-            var current = activeAnchor.getAbsolutePosition();
-            var diff = {x: orig.x - current.x, y: orig.y - current.y};
-            
-            adjustAnchorPosition(topLeft, diff, image);
-            adjustAnchorPosition(bottomRight, diff, image);
-            adjustAnchorPosition(spin, diff, image);
-            
-            ghost.setAbsolutePosition(spin.attrs.x, spin.attrs.y);
+            topLeft.attrs.y = activeAnchor.attrs.y;
+            bottomRight.attrs.x = activeAnchor.attrs.x;
+            spin.attrs.y = activeAnchor.attrs.y - 20;
+            spin.attrs.x = activeAnchor.attrs.x - (image.attrs.width / 2);
+            ghost.attrs.x = spin.attrs.x;
+            ghost.attrs.y = spin.attrs.y;
             break;
           case "bottomRight":
-            orig = getAnchorPosition("bottomRight", image);
-            var current = activeAnchor.getAbsolutePosition();
-            var diff = {x: orig.x - current.x, y: orig.y - current.y};
-            
-            adjustAnchorPosition(topRight, diff, image);
-            adjustAnchorPosition(bottomLeft, diff, image);
-            adjustAnchorPosition(spin, diff, image);
-            
-            ghost.setAbsolutePosition(spin.attrs.x, spin.attrs.y);
+            bottomLeft.attrs.y = activeAnchor.attrs.y;
+            topRight.attrs.x = activeAnchor.attrs.x;
+            spin.attrs.y = activeAnchor.attrs.y - image.attrs.height - 20;
+            spin.attrs.x = activeAnchor.attrs.x - (image.attrs.width / 2);
+            ghost.attrs.x = spin.attrs.x;
+            ghost.attrs.y = spin.attrs.y;
             break;
           case "bottomLeft":
-            orig = getAnchorPosition("topLeft", image);
-            var current = activeAnchor.getAbsolutePosition();
-            var diff = {x: orig.x - current.x, y: orig.y - current.y};
-            
-            adjustAnchorPosition(bottomRight, diff, image);
-            adjustAnchorPosition(topLeft, diff, image);
-            adjustAnchorPosition(spin, diff, image);
-            
-            ghost.setAbsolutePosition(spin.attrs.x, spin.attrs.y);
+            bottomRight.attrs.y = activeAnchor.attrs.y;
+            topLeft.attrs.x = activeAnchor.attrs.x;
+            spin.attrs.y = activeAnchor.attrs.y - image.attrs.height -  20;
+            spin.attrs.x = activeAnchor.attrs.x + (image.attrs.width / 2);
+            ghost.attrs.x = spin.attrs.x;
+            ghost.attrs.y = spin.attrs.y;
             break;
           case "ghost":
             var c = image.getAbsolutePosition();
@@ -85,13 +70,8 @@
             
             var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
 
-            image.setRotation(deg);
-            
-            var handles = new Array(topLeft, topRight, bottomLeft, bottomRight, spin);
-            for (var i=0; i < handles.length; i++) {             
-              var newpos = getAnchorPosition(handles[i].getName(), image);
-              handles[i].setAbsolutePosition(newpos.x, newpos.y);
-            }
+            group.setRotation(deg);
+
             break;
         }
 
@@ -100,77 +80,10 @@
           image.setSize(topRight.attrs.x - topLeft.attrs.x, bottomLeft.attrs.y - topLeft.attrs.y);
         }
       }
-      
-      /*
-       * Scales image (unused)
-       */
       function scaleImage(topLeft, topRight, BottomLeft, image) {
         image.setPosition(topLeft.attrs.x + image.attrs.centerOffset.x, topLeft.attrs.y + image.attrs.centerOffset.y);
         image.setSize(topRight.attrs.x - topLeft.attrs.x, bottomLeft.attrs.y - topLeft.attrs.y);
       }
-      
-      /*
-       * Returns the anchor position based on the anchor and rotation of the image
-       * Pass in string - name of anchor
-       * Returns (x,y) coords object
-       */
-      function getAnchorPosition(name, image) {
-      
-        c = image.getAbsolutePosition();
-        deg = image.getRotation();
-        
-        switch (name) {
-          case "topLeft":
-            var tmpx = c.x - (image.attrs.width / 2);
-            var tmpy = c.y - (image.attrs.height / 2);
-            var orig = {x: tmpx, y: tmpy};
-            break;
-          case "topRight":
-            var tmpx = c.x + (image.attrs.width / 2);
-            var tmpy = c.y - (image.attrs.height / 2);
-            var orig = {x: tmpx, y: tmpy};
-            break;
-          case "bottomLeft":
-            var tmpx = c.x - (image.attrs.width / 2);
-            var tmpy = c.y + (image.attrs.height / 2);
-            var orig = {x: tmpx, y: tmpy};
-            break;
-          case "bottomRight":
-            var tmpx = c.x + (image.attrs.width / 2);
-            var tmpy = c.y + (image.attrs.height / 2);
-            var orig = {x: tmpx, y: tmpy};
-            break;
-          case "spin":
-            var tmpx = c.x;
-            var tmpy = c.y - (image.attrs.height / 2) - 20;
-            var orig = {x: tmpx, y: tmpy};
-            break;
-        }
-        
-        var dx = orig.x - c.x;
-        var dy = orig.y - c.y;
-        
-        var dx1 = (dx * Math.cos(deg)) - (dy * Math.sin(deg));
-        var dy1 = (dx * Math.sin(deg)) + (dy * Math.cos(deg));
-        
-        var x = dx1 + c.x;
-        var y = dy1 + c.y;
-        
-        return {x: x, y: y}
-      
-      }
-      
-      /*
-       * Adds anchor position based on x,y diff
-       */
-      function adjustAnchorPosition(anchor, diff, image) {
-        var anchorOrig = getAnchorPosition(anchor.getName(), image);
-        anchor.setAbsolutePosition(anchorOrig.x + diff.x, anchorOrig.y + diff.y);
-      }
-      
-      /*
-       * Adds anchors to the image group
-       */
       function addAnchor(group, x, y, name, type) {
         var stage = group.getStage();
         var layer = group.getLayer();
@@ -277,9 +190,7 @@
         }
       }
 
-      /*
-       * Window onload!
-       */
+
       window.onload = function() {
 
         stage = new Kinetic.Stage({
@@ -294,9 +205,6 @@
         setupDragAndDrop();
       };
       
-      /*
-       * Adds click image to canvas functionality
-       */
       function addGabby() {
         var img = document.getElementById('gabby');
         var height = img.clientHeight;
@@ -304,9 +212,6 @@
         addToCanvas(img, width, height); 
       }
       
-      /*
-       * Adds image to canvas
-       */
       function addToCanvas(img, width, height) {
         var imgy = img;
         var width = width;
@@ -350,29 +255,20 @@
         });
         
         customlayer.draw();
-        awesomecanvas = document.getElementsByTagName('canvas')[2]; // hack to select canvas we are working with
+        awesomecanvas = document.getElementsByTagName('canvas')[2];
       }
-
-      /*
-       * Downloads canvas
-       */
+      
       function downloadCanvas() {
       //Canvas2Image.saveAsJPEG(awesomecanvas);
       var oImgPNG = Canvas2Image.saveAsPNG(awesomecanvas, true);
         document.body.appendChild(oImgPNG);
       }
-
-      /*
-       * Clears canvas
-       */
+      
       function clearCanvas() {
         stage.reset();
         customlayer = new Kinetic.Layer();
       }
-
-      /*
-       * Adds drag&drop to canvas functionality
-       */
+	  
       function setupDragAndDrop() {
         var dragimg = new Image();
         // To enable drag and drop
