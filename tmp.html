@@ -42,7 +42,7 @@
        */
       function resize(group, activeAnchor) {
         var tl = group.get(".tl")[0];
-        var tr = group.get(".tr")[0];
+        var tr = group.get(".tr")[0];group
         var br = group.get(".br")[0];
         var bl = group.get(".bl")[0];
         var handle = group.get(".handle")[0];
@@ -103,8 +103,18 @@
        * Fix center offset (due to resizing from a corner)
        */
       function fixCenterOffset(group) {
-      
-      
+        var image = group.get(".image")[0]
+        var currentOffset = group.getCenterOffset();
+        var currentPosition = group.getPosition();
+        var newOffset = {x: image.attrs.width /2, y: image.attrs.height /2};
+        var newPosition = {
+          x: currentPosition.x - (currentOffset.x - newOffset.x),
+          y: currentPosition.y - (currentOffset.y - newOffset.y)
+        }
+        
+        group.setCenterOffset(newOffset);
+        group.setPosition(newPosition);
+        layer.draw();
       }
       
       
@@ -212,6 +222,7 @@
           this.moveToTop();
         });
         anchor.on("dragend", function() {
+          fixCenterOffset(group);
           group.draggable(true);
           layer.draw();
         });
