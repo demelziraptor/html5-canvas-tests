@@ -16,400 +16,438 @@
     <script src="base64.js"></script>
     
     <script>
-      /*
-       * Updates position of images in group after drag, resize or rotation
-       */
-      function update(group, activeAnchor) {
-        var topLeft = group.get(".topLeft")[0];
-        var topRight = group.get(".topRight")[0];
-        var bottomRight = group.get(".bottomRight")[0];
-        var bottomLeft = group.get(".bottomLeft")[0];
-        var spin = group.get(".spin")[0];
-        var ghost = group.get(".ghost")[0];
-        var image = group.get(".image")[0];
 
-        // update anchor positions
-        switch (activeAnchor.getName()) {
-          case "topLeft":
-            var orig = getAnchorPosition("topLeft", image);
-            var current = activeAnchor.getAbsolutePosition();
-            var diff = {x: orig.x - current.x, y: orig.y - current.y};
-            
-            adjustAnchorPosition(topRight, diff, image);
-            adjustAnchorPosition(bottomLeft, diff, image);
-            adjustAnchorPosition(spin, diff, image);
-            
-            ghost.setAbsolutePosition(spin.attrs.x, spin.attrs.y);
-            break;
-          case "topRight":
-            orig = getAnchorPosition("topRight", image);
-            var current = activeAnchor.getAbsolutePosition();
-            var diff = {x: orig.x - current.x, y: orig.y - current.y};
-            
-            adjustAnchorPosition(topLeft, diff, image);
-            adjustAnchorPosition(bottomRight, diff, image);
-            adjustAnchorPosition(spin, diff, image);
-            
-            ghost.setAbsolutePosition(spin.attrs.x, spin.attrs.y);
-            break;
-          case "bottomRight":
-            orig = getAnchorPosition("bottomRight", image);
-            var current = activeAnchor.getAbsolutePosition();
-            var diff = {x: orig.x - current.x, y: orig.y - current.y};
-            
-            adjustAnchorPosition(topRight, diff, image);
-            adjustAnchorPosition(bottomLeft, diff, image);
-            adjustAnchorPosition(spin, diff, image);
-            
-            ghost.setAbsolutePosition(spin.attrs.x, spin.attrs.y);
-            break;
-          case "bottomLeft":
-            orig = getAnchorPosition("topLeft", image);
-            var current = activeAnchor.getAbsolutePosition();
-            var diff = {x: orig.x - current.x, y: orig.y - current.y};
-            
-            adjustAnchorPosition(bottomRight, diff, image);
-            adjustAnchorPosition(topLeft, diff, image);
-            adjustAnchorPosition(spin, diff, image);
-            
-            ghost.setAbsolutePosition(spin.attrs.x, spin.attrs.y);
-            break;
-          case "ghost":
-            var c = image.getAbsolutePosition();
-            var p0 = {x: c.x, y: c.y - 50};
-            var p1 = stage.getUserPosition();
-            
-            var p0c = Math.sqrt(Math.pow(c.x-p0.x,2) + Math.pow(c.y-p0.y,2)); // p0->c (b)   
-            var p1c = Math.sqrt(Math.pow(c.x-p1.x,2) + Math.pow(c.y-p1.y,2)); // p1->c (a)
-            var p0p1 = Math.sqrt(Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2)); // p0->p1 (c)
-            
-            var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
-
-            image.setRotation(deg);
-            
-            var handles = new Array(topLeft, topRight, bottomLeft, bottomRight, spin);
-            for (var i=0; i < handles.length; i++) {             
-              var newpos = getAnchorPosition(handles[i].getName(), image);
-              handles[i].setAbsolutePosition(newpos.x, newpos.y);
-            }
-            break;
-        }
-
-        if (activeAnchor.getName() != "ghost") {
-          image.setPosition(topLeft.attrs.x + image.attrs.centerOffset.x, topLeft.attrs.y + image.attrs.centerOffset.y);
-          image.setSize(topRight.attrs.x - topLeft.attrs.x, bottomLeft.attrs.y - topLeft.attrs.y);
-        }
-      }
-      
-      /*
-       * Scales image (unused)
-       */
-      function scaleImage(topLeft, topRight, BottomLeft, image) {
-        image.setPosition(topLeft.attrs.x + image.attrs.centerOffset.x, topLeft.attrs.y + image.attrs.centerOffset.y);
-        image.setSize(topRight.attrs.x - topLeft.attrs.x, bottomLeft.attrs.y - topLeft.attrs.y);
-      }
-      
-      /*
-       * Returns the anchor position based on the anchor and rotation of the image
-       * Pass in string - name of anchor
-       * Returns (x,y) coords object
-       */
-      function getAnchorPosition(name, image) {
-      
-        c = image.getAbsolutePosition();
-        deg = image.getRotation();
-        
-        switch (name) {
-          case "topLeft":
-            var tmpx = c.x - (image.attrs.width / 2);
-            var tmpy = c.y - (image.attrs.height / 2);
-            var orig = {x: tmpx, y: tmpy};
-            break;
-          case "topRight":
-            var tmpx = c.x + (image.attrs.width / 2);
-            var tmpy = c.y - (image.attrs.height / 2);
-            var orig = {x: tmpx, y: tmpy};
-            break;
-          case "bottomLeft":
-            var tmpx = c.x - (image.attrs.width / 2);
-            var tmpy = c.y + (image.attrs.height / 2);
-            var orig = {x: tmpx, y: tmpy};
-            break;
-          case "bottomRight":
-            var tmpx = c.x + (image.attrs.width / 2);
-            var tmpy = c.y + (image.attrs.height / 2);
-            var orig = {x: tmpx, y: tmpy};
-            break;
-          case "spin":
-            var tmpx = c.x;
-            var tmpy = c.y - (image.attrs.height / 2) - 20;
-            var orig = {x: tmpx, y: tmpy};
-            break;
-        }
-        
-        var dx = orig.x - c.x;
-        var dy = orig.y - c.y;
-        
-        var dx1 = (dx * Math.cos(deg)) - (dy * Math.sin(deg));
-        var dy1 = (dx * Math.sin(deg)) + (dy * Math.cos(deg));
-        
-        var x = dx1 + c.x;
-        var y = dy1 + c.y;
-        
-        return {x: x, y: y}
-      
-      }
-      
-      /*
-       * Adds anchor position based on x,y diff
-       */
-      function adjustAnchorPosition(anchor, diff, image) {
-        var anchorOrig = getAnchorPosition(anchor.getName(), image);
-        anchor.setAbsolutePosition(anchorOrig.x + diff.x, anchorOrig.y + diff.y);
-      }
-      
-      /*
-       * Adds anchors to the image group
-       */
-      function addAnchor(group, x, y, name, type) {
-        var stage = group.getStage();
-        var layer = group.getLayer();
-
-        // ghost on top of the rotate handle
-        if(type == 'rotateghost'){
-          var ghost = new Kinetic.Circle({
-            x: x,
-            y: y,
-            stroke: "#993333",
-            fill: "",
-            strokeWidth: 2,
-            radius: 4,
-            name: name,
-            draggable: true
-          });
-
-          ghost.on("dragmove", function() {
-            update(group, this);
-            layer.draw();
-          });
-          ghost.on("mousedown touchstart", function() {
-            group.draggable(false);
-            this.moveToTop();
-          });
-          ghost.on("dragend", function() {
-            group.draggable(true);
-            var spin = group.get(".spin")[0];
-            this.attrs.x = spin.attrs.x;
-            this.attrs.y = spin.attrs.y;
-            layer.draw();
-          });
-          // add hover styling
-          ghost.on("mouseover", function() {
-            var layer = this.getLayer();
-            document.body.style.cursor = "pointer";
-            this.setStrokeWidth(3);
-            layer.draw();
-          });
-          ghost.on("mouseout", function() {
-            var layer = this.getLayer();
-            document.body.style.cursor = "default";
-            this.setStrokeWidth(2);
-            layer.draw();
-          });
-
-          group.add(ghost);
-          
-        } else {
-          // rotate handles
-          if(type == 'rotate'){
-            var anchor = new Kinetic.Circle({
-              x: x,
-              y: y,
-              stroke: "#666",
-              fill: "#ddd",
-              strokeWidth: 2,
-              radius: 4,
-              name: name,
-              draggable: false
-            });
-            
-          // resize handles
-          } else {
-            var anchor = new Kinetic.Circle({
-              x: x,
-              y: y,
-              stroke: "#666",
-              fill: "#ddd",
-              strokeWidth: 2,
-              radius: 4,
-              name: name,
-              draggable: true
-            });
-          }
-
-          anchor.on("dragmove", function() {
-            update(group, this);
-            layer.draw();
-          });
-          anchor.on("mousedown touchstart", function() {
-            group.draggable(false);
-            this.moveToTop();
-          });
-          anchor.on("dragend", function() {
-            group.draggable(true);
-            layer.draw();
-          });
-          // add hover styling
-          anchor.on("mouseover", function() {
-            var layer = this.getLayer();
-            document.body.style.cursor = "pointer";
-            this.setStrokeWidth(3);
-            layer.draw();
-          });
-          anchor.on("mouseout", function() {
-            var layer = this.getLayer();
-            document.body.style.cursor = "default";
-            this.setStrokeWidth(2);
-            layer.draw();
-          });
-
-          group.add(anchor);
-        }
-      }
+      var stage;
+      var layer;
+      var selected;
+      var wasSelected;
 
       /*
-       * Window onload!
+       * Set up canvas stage and layer
        */
-      window.onload = function() {
-
+      function initCanvas(id) {
         stage = new Kinetic.Stage({
-          container: "container",
-          width: 800,
-          height: 600
+          container: id,
+          width: 850,
+          height: 500
         });
-        
-        customlayer = new Kinetic.Layer();
+        layer = new Kinetic.Layer();
+        stage.add(layer);
         stage.draw();
-        stagecontainer = document.getElementsByClassName('kineticjs-content')[0];
-        setupDragAndDrop();
-      };
-      
-      /*
-       * Adds click image to canvas functionality
-       */
-      function addGabby() {
-        var img = document.getElementById('gabby');
-        var height = img.clientHeight;
-        var width = img.clientWidth;
-        addToCanvas(img, width, height); 
       }
       
-      /*
-       * Adds image to canvas
-       */
-      function addToCanvas(img, width, height) {
-        var imgy = img;
-        var width = width;
-        var height = height;
       
-        var gabbyGroup = new Kinetic.Group({
-          x: 300,
-          y: 300,
-          draggable: true
-        });
-
-        customlayer.add(gabbyGroup);
-        stage.add(customlayer);
-
-        var gabbyImg = new Kinetic.Image({
-          x: 0,
-          y: 0,
-          image: imgy,
-          width: width,
-          height: height,
-          name: "image",
-          centerOffset: [width/2, height/2]
-        });
-        
-        gabbyGroup.on("dblclick dbltap", function() {
-          customlayer.remove(gabbyGroup);
-          //gabbyGroup.setScale(-1,0);
-          customlayer.draw();
-        });
-
-        gabbyGroup.add(gabbyImg);
-        addAnchor(gabbyGroup, width / -2, height / -2, "topLeft", 0);
-        addAnchor(gabbyGroup, width / 2, height / -2, "topRight", 0);
-        addAnchor(gabbyGroup, width / 2, height / 2, "bottomRight", 0);
-        addAnchor(gabbyGroup, width / -2, height / 2, "bottomLeft", 0);
-        addAnchor(gabbyGroup, 0, (height / -2) - 20, "spin", 'rotate');
-        addAnchor(gabbyGroup, 0, (height / -2) - 20, "ghost", 'rotateghost');
-
-        gabbyGroup.on("dragstart", function() {
-          this.moveToTop();
-        });
-        
-        customlayer.draw();
-        awesomecanvas = document.getElementsByTagName('canvas')[2]; // hack to select canvas we are working with
-      }
-
       /*
-       * Downloads canvas
-       */
-      function downloadCanvas() {
-      //Canvas2Image.saveAsJPEG(awesomecanvas);
-      var oImgPNG = Canvas2Image.saveAsPNG(awesomecanvas, true);
-        document.body.appendChild(oImgPNG);
-      }
-
-      /*
-       * Clears canvas
+       * Clear canvas, start again
        */
       function clearCanvas() {
-        stage.reset();
-        customlayer = new Kinetic.Layer();
+        layer.removeChildren();
+        layer.draw();
+      }
+      
+      
+      /*
+       * Download canvas
+       */
+      function downloadCanvas() {
+        var canvas = stage.children[0].canvas;
+        var oImgPNG = Canvas2Image.saveAsPNG(canvas, true);
+        document.body.appendChild(oImgPNG);
+      }
+      
+      
+      /*
+       * Resize
+       */
+      function resize(group, activeAnchor) {
+        var tl = group.get(".tl")[0];
+        var tr = group.get(".tr")[0];group
+        var br = group.get(".br")[0];
+        var bl = group.get(".bl")[0];
+        var handle = group.get(".handle")[0];
+        var ghost = group.get(".ghost")[0];
+        var flip = group.get(".flip")[0];
+        var image = group.get(".image")[0];
+
+        switch (activeAnchor.attrs.name) {
+          case "tl":
+            bl.setPosition(tl.attrs.x, br.attrs.y);
+            tr.setPosition(br.attrs.x, tl.attrs.y);
+            break;
+          case "tr":
+            br.setPosition(tr.attrs.x, bl.attrs.y);
+            tl.setPosition(bl.attrs.x, tr.attrs.y);
+            break;
+          case "bl":
+            br.setPosition(tr.attrs.x, bl.attrs.y);
+            tl.setPosition(bl.attrs.x, tr.attrs.y);
+            break;
+          case "br":
+            bl.setPosition(tl.attrs.x, br.attrs.y);
+            tr.setPosition(br.attrs.x, tl.attrs.y);
+            break;
+          }
+          
+          handle.setPosition((tr.attrs.x + tl.attrs.x) / 2, tl.attrs.y - 20);
+          ghost.setPosition(handle.getPosition());
+          flip.setPosition((tr.attrs.x + tl.attrs.x) / 2, bl.attrs.y + 20);
+          
+          image.setPosition(tl.attrs.x, tl.attrs.y);
+          image.attrs.width = tr.attrs.x - tl.attrs.x;
+          image.attrs.height = bl.attrs.y - tl.attrs.y;
+      }
+      
+      
+      /*
+       * Rotate
+       */
+      function rotate(group) {
+        var c = group.getAbsolutePosition();
+        var p0 = {x: c.x, y: c.y - 50};
+        var p1 = stage.getUserPosition();
+        
+        var p0c = Math.sqrt(Math.pow(c.x-p0.x,2) + Math.pow(c.y-p0.y,2)); // p0->c (b)   
+        var p1c = Math.sqrt(Math.pow(c.x-p1.x,2) + Math.pow(c.y-p1.y,2)); // p1->c (a)
+        var p0p1 = Math.sqrt(Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2)); // p0->p1 (c)
+        
+        var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
+
+        // fix for negative rotation
+        if(p1.x < c.x) {
+          deg = (360 * (Math.PI/180)) - deg;
+        }
+        group.setRotation(deg);
+      }
+      
+      
+      /*
+       * Flip
+       */
+      function flip(group) {
+        group.attrs.scale.x = group.attrs.scale.x * -1;
+      }
+      
+      
+      /*
+       * Fix center offset (due to resizing from a corner)
+       */
+      function fixCenterOffset(group) {
+        var image = group.get(".image")[0]
+        var currentOffset = group.getCenterOffset();
+        var currentPosition = group.getPosition();
+        var newOffset = {x: image.attrs.width /2, y: image.attrs.height /2};
+        var newPosition = {
+          x: currentPosition.x - (currentOffset.x - newOffset.x),
+          y: currentPosition.y - (currentOffset.y - newOffset.y)
+        }
+        
+        group.setCenterOffset(newOffset);
+        group.setPosition(newPosition);
+        layer.draw();
+      }
+      
+      
+      /*
+       * Add an image plus anchors to the canvas using group
+       */
+      function initImage(img) {
+        // Make a group for all the elements (img + anchors)
+        var kimggroup = new Kinetic.Group({
+          x: 300,
+          y: 300,
+          draggable: true,
+          centerOffset: [img.width/2, img.height/2]
+        });
+        layer.add(kimggroup);
+        stage.add(layer);
+
+        // Make the img and add it to the group
+        var kimg = new Kinetic.Image({
+          x: 0,
+          y: 0,
+          image: img,
+          width: img.width,
+          height: img.height,
+          name: "image"
+        });
+        kimggroup.add(kimg);
+
+        // Add anchors for resizing and rotation
+        addAnchor(kimggroup, 0, 0, "tl");
+        addAnchor(kimggroup, img.width, 0, "tr");
+        addAnchor(kimggroup, img.width, img.height, "br");
+        addAnchor(kimggroup, 0, img.height, "bl");
+        addAnchor(kimggroup, img.width / 2, -20, "handle");
+        addAnchor(kimggroup, img.width / 2, -20,  "ghost");
+        addAnchor(kimggroup, img.width / 2, img.height +20,  "flip");
+
+        // On click make the image selected
+        kimggroup.on("mousedown", function() {
+          wasSelected = selected;
+          selected = this;
+          updateSelected();
+          this.moveToTop();
+          stage.draw();
+        });
+
+        // Update cursor on mouseover
+        kimg.on("mouseover", function() {
+          document.body.style.cursor = "move";
+        });
+
+        kimg.on("mouseout", function() {
+          document.body.style.cursor = "default";
+        });
+        
+        // Double click to remove
+        kimg.on("dblclick dbltap", function() {
+          layer.remove(kimggroup);
+          layer.draw();
+        });
+
+        // Draw the img
+        //stage.add(layer);
+        stage.draw();
+      }
+      
+      
+      /*
+       * Create anchor and add to group
+       */
+      function addAnchor(group, x, y, name) {
+        var config = {
+          x: x,
+          y: y,
+          stroke: "#666", 
+          fill: "#ddd", 
+          strokeWidth: 2, 
+          radius: 4, 
+          name: name, 
+          draggable: true
+        }
+        switch (name) {
+          case "handle":
+            config.draggable = false;
+            var anchor = addRotateAnchor(group, config);
+            break;
+          case "ghost":
+            config.stroke = "#993333";
+            var anchor = addRotateGhostAnchor(group, config);
+            break;
+          case "flip":
+            config.stroke = "#0000ff";
+            config.draggable = false;
+            var anchor = addFlipAnchor(group, config);
+            break;
+          default:
+            var anchor = addResizeAnchor(group, config);
+            break;
+        }
+        anchor.hide();
+        group.add(anchor);
+      }
+      
+      /*
+       * Set up resize anchor
+       */
+      function addResizeAnchor(group, config) {
+        var anchor = new Kinetic.Circle(config);
+        
+        anchor.on("dragmove", function() {
+          resize(group, this);
+          layer.draw();
+        });
+        anchor.on("mousedown touchstart", function() {
+          group.draggable(false);
+          this.moveToTop();
+        });
+        anchor.on("dragend", function() {
+          fixCenterOffset(group);
+          group.draggable(true);
+          layer.draw();
+        });
+        
+        anchor.on("mouseover", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "pointer";
+          this.setStrokeWidth(3);
+          layer.draw();
+        });
+        anchor.on("mouseout", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "default";
+          this.setStrokeWidth(2);
+          layer.draw();
+        });
+        return anchor;
+      }
+      
+      /*
+       * Set up rotation anchor
+       */
+      function addRotateAnchor(group, config) {
+        var anchor = new Kinetic.Circle(config);
+        
+        anchor.on("mouseover", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "pointer";
+          this.setStrokeWidth(3);
+          layer.draw();
+        });
+        anchor.on("mouseout", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "default";
+          this.setStrokeWidth(2);
+          layer.draw();
+        });
+        return anchor;
+      }
+      
+      /*
+       * Set up rotation ghost anchor
+       */
+      function addRotateGhostAnchor(group, config) {
+        var anchor = new Kinetic.Circle(config);
+        
+        anchor.on("dragmove", function() {
+          rotate(group);
+          layer.draw();
+        });
+        anchor.on("mousedown touchstart", function() {
+          group.draggable(false);
+          this.moveToTop();
+        });
+        anchor.on("dragend", function() {
+          var handle = group.get(".handle")[0];
+          this.setPosition(handle.getPosition());
+          group.draggable(true);
+          layer.draw();
+        });
+        
+        anchor.on("mouseover", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "pointer";
+          this.setStrokeWidth(3);
+          layer.draw();
+        });
+        anchor.on("mouseout", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "default";
+          this.setStrokeWidth(2);
+          layer.draw();
+        });
+        return anchor;
+      }
+      
+      /*
+       * Set up flip anchor
+       */
+      function addFlipAnchor(group, config) {
+        var anchor = new Kinetic.Circle(config);
+        
+        anchor.on("mousedown touchstart", function() {
+          flip(group);
+          layer.draw();
+        });
+        
+        anchor.on("mouseover", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "pointer";
+          this.setStrokeWidth(3);
+          layer.draw();
+        });
+        anchor.on("mouseout", function() {
+          var layer = this.getLayer();
+          document.body.style.cursor = "default";
+          this.setStrokeWidth(2);
+          layer.draw();
+        });
+        return anchor;
+      }
+	  
+	  
+    /*
+     * Show anchors only when group selected
+     */
+	  function updateSelected() {
+		  // Deselect the old img if there was any
+		  if (wasSelected) {
+			  wasSelected.get(".tl")[0].hide();
+			  wasSelected.get(".tr")[0].hide();
+			  wasSelected.get(".br")[0].hide();
+			  wasSelected.get(".bl")[0].hide();
+			  wasSelected.get(".handle")[0].hide();
+			  wasSelected.get(".ghost")[0].hide();
+        wasSelected.get(".flip")[0].hide();
+		  }
+
+		  // Select the new image
+		  selected.get(".tl")[0].show();
+		  selected.get(".tr")[0].show();
+		  selected.get(".br")[0].show();
+		  selected.get(".bl")[0].show();
+		  selected.get(".handle")[0].show();
+		  selected.get(".ghost")[0].show();
+      selected.get(".flip")[0].show();
+     }
+      
+      
+      /*
+       * Add clicked images to the canvas
+       */
+      function addClickedImage(name) {
+        var img = document.getElementById(name);
+        initImage(img); 
       }
 
+      
       /*
-       * Adds drag&drop to canvas functionality
+       * Listen for images dragged into canvas and add them
        */
       function setupDragAndDrop() {
-        var dragimg = new Image();
-        // To enable drag and drop
-        stagecontainer.addEventListener("dragover", function (evt) {
+        stage.content.addEventListener("dragover", function (evt) {
           evt.preventDefault();
         }, false);
 
         // Handle dropped image file - only Firefox and Google Chrome
-        stagecontainer.addEventListener("drop", function (evt) {
+        stage.content.addEventListener("drop", function (evt) {
+          dragImg = new Image();
           var files = evt.dataTransfer.files;
           if (files.length > 0) {
             var file = files[0];
             if (typeof FileReader !== "undefined" && file.type.indexOf("image") != -1) {
               var reader = new FileReader();
               reader.onload = function (evt) {
-                dragimg.src = evt.target.result;
+                dragImg.src = evt.target.result;
               };
               reader.readAsDataURL(file);
-              dragimg.onload = function(){
-                addToCanvas(this, this.width, this.height);
+              dragImg.onload = function(){
+                initImage(this);
               }
             }
           }
           evt.preventDefault();
         }, false);
-       }
+      }
+       
       
+      
+      window.onload = function() {
+        initCanvas("container");
+        setupDragAndDrop();
+      };
 
     </script>
   </head>
   <body onmousedown="return false;">
-    <div style="float: right;">
-      <img src="image.jpg" name="gabby" id="gabby" onClick="addGabby()" /><br /><br />
+    <div id="right" style="float: right;">
+      <img src="image.jpg" name="gabby" id="gabby" onClick="addClickedImage('gabby')" /><br /><br />
       <a href="#" name="downloadcanvas" id="downloadcanvas" onClick="downloadCanvas()">download</a><br /><br />
       <a href="#" name="clearcanvas" id="clearcanvas" onClick="clearCanvas()">clear</a>
-    </div>
-    <div id="container"></div>
-	<div id="newimg2"></div>
+    </div><!-- #right -->
+    <div role="main">
+      <div id="container">
+      </div><!-- #container -->
+    </div><!-- main -->
   </body>
 </html>
