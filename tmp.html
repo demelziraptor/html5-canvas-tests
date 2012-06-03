@@ -103,6 +103,10 @@
         
         var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
 
+        // fix for negative rotation
+        if(p1.x < c.x) {
+          deg = (360 * (Math.PI/180)) - deg;
+        }
         group.setRotation(deg);
       }
       

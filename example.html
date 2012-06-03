@@ -78,10 +78,10 @@
               break;
           }
           
-          handle.x = tr.x / 2
-          handle.y = tr.y
-          ghost.x = handle.x
-          ghost.y = handle.y
+          handle.x = tr.x / 2;
+          handle.y = tr.y;
+          ghost.x = handle.x;
+          ghost.y = handle.y;
           
           image.x = tl.x;
           image.y = tl.y;
@@ -99,7 +99,10 @@
             var p0p1 = Math.sqrt(Math.pow(p1.x-p0.x,2) + Math.pow(p1.y-p0.y,2)); // p0->p1 (c)
             
             var deg =  Math.acos((p1c*p1c+p0c*p0c-p0p1*p0p1)/(2*p1c*p0c));
-
+            
+            if(p1.x < c.x) {
+              deg = (180 * (Math.PI/180)) - deg;
+            }
             group.setRotation(deg);
       }
 
