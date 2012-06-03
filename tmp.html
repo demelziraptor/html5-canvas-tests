@@ -380,7 +380,6 @@
        * Listen for images dragged into canvas and add them
        */
       function setupDragAndDrop() {
-        // To enable drag and drop
         stage.content.addEventListener("dragover", function (evt) {
           evt.preventDefault();
         }, false);
@@ -406,6 +405,7 @@
         }, false);
       }
        
+      
       
       window.onload = function() {
         initCanvas("container");
