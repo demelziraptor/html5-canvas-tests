@@ -468,8 +468,7 @@
       /*
        * Add clicked images to the canvas
        */
-      function addClickedImage(name) {
-        var img = document.getElementById(name);
+      function addClickedImage(img) {
         initImage(img, "normal"); 
       }
 
@@ -477,7 +476,7 @@
       /*
        * Listen for images dragged into canvas and add them
        */
-      function setupDragAndDrop() {
+      function initDragAndDrop() {
         stage.content.addEventListener("dragover", function (evt) {
           evt.preventDefault();
         }, false);
@@ -509,21 +508,44 @@
           evt.preventDefault();
         }, false);
       }
+      
+      
+      /*
+       * Listen for action clicks and handle them
+       */
+      function initActions() {
+        var elements = document.getElementsByClassName("action");
+        for (var i=0; i < elements.length; i++) {
+          elements[i].onclick = function(e){
+            e.preventDefault();
+            if (this.nodeName == 'IMG') {
+              addClickedImage(this);
+            } else {
+              if (this.id == 'download') {
+                downloadCanvas();
+              } else if (this.id == 'clear') {
+                clearCanvas();
+              }
+            }
+          }
+        }
+      }
        
       
       
       window.onload = function() {
         initCanvas("container");
-        setupDragAndDrop();
+        initDragAndDrop();
+        initActions();
       };
 
     </script>
   </head>
   <body onmousedown="return false;">
     <div id="right" style="float: right;">
-      <img src="image.jpg" name="gabby" id="gabby" onClick="addClickedImage('gabby')" /><br /><br />
-      <a href="#" name="downloadcanvas" id="downloadcanvas" onClick="downloadCanvas()">download</a><br /><br />
-      <a href="#" name="clearcanvas" id="clearcanvas" onClick="clearCanvas()">clear</a>
+      <img src="image.jpg" class="action" id="gabby" /><br /><br />
+      <a href="#" class="action" id="download">download</a><br /><br />
+      <a href="#" class="action" id="clear">clear</a>
     </div><!-- #right -->
     <div role="main">
       <div id="container">
