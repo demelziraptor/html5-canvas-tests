@@ -150,11 +150,11 @@
       
       
       /*
-       * Prepare background image
+       * Resize image (before adding to canvas)
        */
-      function prepareBackground(img){
-        var maxWidth = 800;
-        var maxHeight = 500;
+      function resizeImage(img, maxSize){
+        var maxWidth = maxSize.w;
+        var maxHeight = maxSize.h;
         if (img.width > maxWidth) {
           img.height = (maxWidth / img.width) * img.height;
           img.width = maxWidth;
@@ -187,7 +187,7 @@
        * Add background image and group
        */
       function initBackgroundImage(img) {
-        var img = prepareBackground(img);
+        var img = resizeImage(img, {w: 800, h: 500});
         stage.setSize(img.width, img.height);
 
         var kimggroup = new Kinetic.Group({
@@ -500,6 +500,7 @@
                   var type = "background";
                 } else {
                   var type = "normal";
+                  resizeImage(this, {w: stage.attrs.width - 50, h: stage.attrs.height - 50});
                 }
                 initImage(this, type);
               }
