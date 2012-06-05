@@ -21,6 +21,7 @@
       var layer;
       var selected;
       var wasSelected;
+      var haveBackground; // first dragged image sets stage size
 
       /*
        * Set up canvas stage and layer
@@ -43,6 +44,7 @@
       function clearCanvas() {
         layer.removeChildren();
         layer.draw();
+        haveBackground = false;
       }
       
       
@@ -148,19 +150,56 @@
       
       
       /*
+       * Prepare background image
+       */
+      function prepareBackground(img){
+        var maxWidth = 800;
+        var maxHeight = 500;
+        if (img.width > maxWidth) {
+          img.height = (maxWidth / img.width) * img.height;
+          img.width = maxWidth;
+        }
+        if (img.height > maxHeight) {
+          img.width = (maxHeight / img.height) * img.width;
+          img.height = maxHeight;
+        }
+        return img;
+      }
+      
+      
+      /*
        * Add an image plus anchors to the canvas using group
        */
-      function initImage(img) {
-        // Make a group for all the elements (img + anchors)
-        var kimggroup = new Kinetic.Group({
-          x: 300,
-          y: 300,
-          draggable: true,
-          centerOffset: [img.width/2, img.height/2]
-        });
+      function initImage(img, type) {
+      
+        if(type == "background") {
+          var kimggroup = initBackgroundImage(img);
+        } else {
+          var kimggroup = initNormalImage(img);
+        }
+      
         layer.add(kimggroup);
         stage.add(layer);
 
+        // Draw the img
+        stage.draw();
+      }
+      
+      
+      /*
+       * Add background image
+       */
+      function initBackgroundImage(img) {
+
+        var img = prepareBackground(img);
+        stage.setSize(img.width, img.height);
+
+        var kimggroup = new Kinetic.Group({
+          x: 0,
+          y: 0,
+          draggable: false
+        });
+        
         // Make the img and add it to the group
         var kimg = new Kinetic.Image({
           x: 0,
@@ -171,7 +210,34 @@
           name: "image"
         });
         kimggroup.add(kimg);
+      
+        return kimggroup;
+      }
+      
+      
+      /*
+       * Add normal image
+       */
+      function initNormalImage(img) {
+      
+        var kimggroup = new Kinetic.Group({
+          x: stage.attrs.width / 2,
+          y: stage.attrs.height / 2,
+          draggable: true,
+          centerOffset: [img.width/2, img.height/2]
+        });
 
+        // Make the img and add it to the group
+        var kimg = new Kinetic.Image({
+          x: 0,
+          y: 0,
+          image: img,
+          width: img.width,
+          height: img.height,
+          name: "image"
+        });
+        kimggroup.add(kimg);        
+      
         // Add anchors for resizing and rotation
         addAnchor(kimggroup, 0, 0, "tl");
         addAnchor(kimggroup, img.width, 0, "tr");
@@ -180,7 +246,7 @@
         addAnchor(kimggroup, img.width / 2, -20, "handle");
         addAnchor(kimggroup, img.width / 2, -20,  "ghost");
         addAnchor(kimggroup, img.width / 2, img.height +20,  "flip");
-
+      
         // On click make the image selected
         kimggroup.on("mousedown", function() {
           wasSelected = selected;
@@ -189,8 +255,7 @@
           this.moveToTop();
           stage.draw();
         });
-
-        // Update cursor on mouseover
+        
         kimg.on("mouseover", function() {
           document.body.style.cursor = "move";
         });
@@ -204,10 +269,8 @@
           layer.remove(kimggroup);
           layer.draw();
         });
-
-        // Draw the img
-        //stage.add(layer);
-        stage.draw();
+        
+        return kimggroup;
       }
       
       
@@ -397,7 +460,7 @@
        */
       function addClickedImage(name) {
         var img = document.getElementById(name);
-        initImage(img); 
+        initImage(img, "normal"); 
       }
 
       
@@ -422,7 +485,13 @@
               };
               reader.readAsDataURL(file);
               dragImg.onload = function(){
-                initImage(this);
+                if (!haveBackground) {
+                  haveBackground = true;
+                  var type = "background";
+                } else {
+                  var type = "normal";
+                }
+                initImage(this, type);
               }
             }
           }
@@ -444,6 +513,7 @@
       <img src="image.jpg" name="gabby" id="gabby" onClick="addClickedImage('gabby')" /><br /><br />
       <a href="#" name="downloadcanvas" id="downloadcanvas" onClick="downloadCanvas()">download</a><br /><br />
       <a href="#" name="clearcanvas" id="clearcanvas" onClick="clearCanvas()">clear</a>
+      <a href="#" name="resizecanvas" id="resizecanvas" onClick="resizeCanvas()">resize canvas</a>
     </div><!-- #right -->
     <div role="main">
       <div id="container">

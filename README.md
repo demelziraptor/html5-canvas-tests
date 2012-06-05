@@ -18,7 +18,6 @@ Features to test
 - Flip (x axis)
 - Multiple images from different sources
 - Canvas size based on first image added
-- Draggable canvas size
 - Canvas download
 - Browser detection
 
@@ -32,8 +31,14 @@ Currently working
 - Rotate
 - Delete (double click)
 - Flip
+- Canvas size based on first image added (dragged only)
 
 
 Currently broken
 ----------------
 - Multiple rotate/resize/flip changes causes jumpiness
+
+
+Notes
+-----
+- First image dragged to canvas becomes the background; it wipes anything currently on the canvas, and resizes the canvas to the image size (resized if goes over a max width and height)
