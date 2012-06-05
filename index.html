@@ -206,6 +206,14 @@
           name: "image"
         });
         kimggroup.add(kimg);
+        
+        // Deselect normal images when background clicked
+        kimggroup.on("mousedown", function() {
+          wasSelected = selected;
+          selected = false;
+          updateSelected();
+          stage.draw();
+        });
       
         return kimggroup;
       }
@@ -432,8 +440,8 @@
     /*
      * Show anchors only when group selected
      */
-	  function updateSelected() {
-		  // Deselect the old img if there was any
+    function updateSelected() {
+    // Deselect the old img if there was any
       if (wasSelected) {
         wasSelected.get(".tl")[0].hide();
         wasSelected.get(".tr")[0].hide();
@@ -444,14 +452,16 @@
         wasSelected.get(".flip")[0].hide();
       }
 
-      // Select the new image
-      selected.get(".tl")[0].show();
-      selected.get(".tr")[0].show();
-      selected.get(".br")[0].show();
-      selected.get(".bl")[0].show();
-      selected.get(".handle")[0].show();
-      selected.get(".ghost")[0].show();
-      selected.get(".flip")[0].show();
+      // Select the new image if there is one
+      if (selected) {
+        selected.get(".tl")[0].show();
+        selected.get(".tr")[0].show();
+        selected.get(".br")[0].show();
+        selected.get(".bl")[0].show();
+        selected.get(".handle")[0].show();
+        selected.get(".ghost")[0].show();
+        selected.get(".flip")[0].show();
+      }
     }
       
       
