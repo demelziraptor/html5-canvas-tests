@@ -63,7 +63,7 @@
        */
       function resize(group, activeAnchor) {
         var tl = group.get(".tl")[0];
-        var tr = group.get(".tr")[0];group
+        var tr = group.get(".tr")[0];
         var br = group.get(".br")[0];
         var bl = group.get(".bl")[0];
         var handle = group.get(".handle")[0];
@@ -193,7 +193,8 @@
         var kimggroup = new Kinetic.Group({
           x: 0,
           y: 0,
-          draggable: false
+          draggable: false,
+          name: img.src.replace(/^.*[\\\/]/, '')
         });
         
         // Make the img and add it to the group
@@ -543,7 +544,7 @@
   </head>
   <body onmousedown="return false;">
     <div id="right" style="float: right;">
-      <img src="image.jpg" class="action" id="gabby" /><br /><br />
+      <img src="image.jpg" class="action" /><br /><br />
       <a href="#" class="action" id="download">download</a><br /><br />
       <a href="#" class="action" id="clear">clear</a>
     </div><!-- #right -->
