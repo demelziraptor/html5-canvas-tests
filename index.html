@@ -88,15 +88,15 @@
             bl.setPosition(tl.attrs.x, br.attrs.y);
             tr.setPosition(br.attrs.x, tl.attrs.y);
             break;
-          }
+        }
           
-          handle.setPosition((tr.attrs.x + tl.attrs.x) / 2, tl.attrs.y - 20);
-          ghost.setPosition(handle.getPosition());
-          flip.setPosition((tr.attrs.x + tl.attrs.x) / 2, bl.attrs.y + 20);
-          
-          image.setPosition(tl.attrs.x, tl.attrs.y);
-          image.attrs.width = tr.attrs.x - tl.attrs.x;
-          image.attrs.height = bl.attrs.y - tl.attrs.y;
+        handle.setPosition((tr.attrs.x + tl.attrs.x) / 2, tl.attrs.y - 20);
+        ghost.setPosition(handle.getPosition());
+        flip.setPosition((tr.attrs.x + tl.attrs.x) / 2, bl.attrs.y + 20);
+        
+        image.setPosition(tl.attrs.x, tl.attrs.y);
+        image.attrs.width = tr.attrs.x - tl.attrs.x;
+        image.attrs.height = bl.attrs.y - tl.attrs.y;
       }
       
       
@@ -168,10 +168,9 @@
       
       
       /*
-       * Add an image plus anchors to the canvas using group
+       * Add image to canvas using group
        */
       function initImage(img, type) {
-      
         if(type == "background") {
           var kimggroup = initBackgroundImage(img);
         } else {
@@ -180,17 +179,14 @@
       
         layer.add(kimggroup);
         stage.add(layer);
-
-        // Draw the img
         stage.draw();
       }
       
       
       /*
-       * Add background image
+       * Add background image and group
        */
       function initBackgroundImage(img) {
-
         var img = prepareBackground(img);
         stage.setSize(img.width, img.height);
 
@@ -216,7 +212,7 @@
       
       
       /*
-       * Add normal image
+       * Add normal image and group
        */
       function initNormalImage(img) {
       
@@ -310,6 +306,7 @@
         group.add(anchor);
       }
       
+      
       /*
        * Set up resize anchor
        */
@@ -345,6 +342,7 @@
         return anchor;
       }
       
+      
       /*
        * Set up rotation anchor
        */
@@ -365,6 +363,7 @@
         });
         return anchor;
       }
+      
       
       /*
        * Set up rotation ghost anchor
@@ -402,6 +401,7 @@
         return anchor;
       }
       
+      
       /*
        * Set up flip anchor
        */
@@ -434,25 +434,25 @@
      */
 	  function updateSelected() {
 		  // Deselect the old img if there was any
-		  if (wasSelected) {
-			  wasSelected.get(".tl")[0].hide();
-			  wasSelected.get(".tr")[0].hide();
-			  wasSelected.get(".br")[0].hide();
-			  wasSelected.get(".bl")[0].hide();
-			  wasSelected.get(".handle")[0].hide();
-			  wasSelected.get(".ghost")[0].hide();
+      if (wasSelected) {
+        wasSelected.get(".tl")[0].hide();
+        wasSelected.get(".tr")[0].hide();
+        wasSelected.get(".br")[0].hide();
+        wasSelected.get(".bl")[0].hide();
+        wasSelected.get(".handle")[0].hide();
+        wasSelected.get(".ghost")[0].hide();
         wasSelected.get(".flip")[0].hide();
-		  }
+      }
 
-		  // Select the new image
-		  selected.get(".tl")[0].show();
-		  selected.get(".tr")[0].show();
-		  selected.get(".br")[0].show();
-		  selected.get(".bl")[0].show();
-		  selected.get(".handle")[0].show();
-		  selected.get(".ghost")[0].show();
+      // Select the new image
+      selected.get(".tl")[0].show();
+      selected.get(".tr")[0].show();
+      selected.get(".br")[0].show();
+      selected.get(".bl")[0].show();
+      selected.get(".handle")[0].show();
+      selected.get(".ghost")[0].show();
       selected.get(".flip")[0].show();
-     }
+    }
       
       
       /*
@@ -513,7 +513,6 @@
       <img src="image.jpg" name="gabby" id="gabby" onClick="addClickedImage('gabby')" /><br /><br />
       <a href="#" name="downloadcanvas" id="downloadcanvas" onClick="downloadCanvas()">download</a><br /><br />
       <a href="#" name="clearcanvas" id="clearcanvas" onClick="clearCanvas()">clear</a>
-      <a href="#" name="resizecanvas" id="resizecanvas" onClick="resizeCanvas()">resize canvas</a>
     </div><!-- #right -->
     <div role="main">
       <div id="container">
