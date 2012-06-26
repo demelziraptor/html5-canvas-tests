@@ -136,11 +136,12 @@
       function fixCenterOffset(group) {
         var image = group.get(".image")[0]
         var currentOffset = group.getCenterOffset();
-        var currentPosition = group.getPosition();
-        var newOffset = {x: image.attrs.width /2, y: image.attrs.height /2};
+        var currentGroupPosition = group.getPosition();
+        var currentImagePosition = image.getPosition();
+        var newOffset = {x: image.attrs.width /2 + currentImagePosition.x, y: image.attrs.height /2 + currentImagePosition.y};
         var newPosition = {
-          x: currentPosition.x - (currentOffset.x - newOffset.x),
-          y: currentPosition.y - (currentOffset.y - newOffset.y)
+          x: currentGroupPosition.x - (currentOffset.x - newOffset.x),
+          y: currentGroupPosition.y - (currentOffset.y - newOffset.y)
         }
         
         group.setCenterOffset(newOffset);
